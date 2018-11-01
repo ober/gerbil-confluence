@@ -1,0 +1,1 @@
+(("confluence.ss" gerbil/gambit scheme/base std/format std/generic std/net/request std/pregexp std/srfi/13 std/srfi/19 std/srfi/95 std/sugar std/text/base64 std/text/json std/text/utf8 std/text/yaml))
