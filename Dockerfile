@@ -1,6 +1,7 @@
-from gerbil/scheme:latest
+FROM jaimef/gerbil
 
 MAINTAINER jaimef@linbsd.org
+
 COPY . /root/confluence
 ENV PATH "$PATH:/root/gerbil/bin"
 ENV GERBIL_HOME "/root/gerbil"
