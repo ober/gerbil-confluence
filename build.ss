@@ -8,13 +8,13 @@
 
 (def build-spec
   '("confluence"
-    (exe: "confluence" "-ld-options" "-lyaml -lssl -lz -L/usr/local/lib/" "-cc-options" "-I/usr/local/include")
+    (exe: "confluence" "-ld-options" "-lyaml -lz -L/usr/local/lib/" "-cc-options" "-I/usr/local/include")
     ))
 
 (def build-spec-static
   '("confluence"
     (static-exe: "confluence"
-                 "-ld-options" "-lyaml -lssl -lz -L/usr/local/lib -L/usr/local/opt/openssl/lib"
+                 "-ld-options" "-lyaml -lz -L/usr/local/lib -L/usr/local/opt/openssl/lib"
 		 "-cc-options" "-I/usr/local/include -I/usr/local/opt/openssl/include"
                  "-prelude" "(declare (not safe))")))
 
