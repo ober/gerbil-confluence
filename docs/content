@@ -1,0 +1,310 @@
+"/content": {
+    "get": {
+	"tags": [
+	    "/content"
+	],
+	"summary": "Get content",
+	"description": "Returns all content in a Confluence instance.\n\n**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**: \nPermission to access the Confluence site ('Can use' global permission). \nOnly content that the user has permission to view will be returned.",
+	"operationId": "com.atlassian.confluence.plugins.restapi.resources.ContentResource.getContent_get",
+	"parameters": [
+	    {
+		"name": "type",
+		"in": "query",
+		"description": "The type of content to return.",
+		"required": false,
+		"schema": {
+		    "type": "string",
+		    "enum": [
+			"page",
+			"blogpost"
+		    ],
+		    "default": "page"
+		}
+	    },
+	    {
+		"name": "spaceKey",
+		"in": "query",
+		"description": "The key of the space to be queried for its content.",
+		"required": false,
+		"schema": {
+		    "type": "string"
+		}
+	    },
+	    {
+		"name": "title",
+		"in": "query",
+		"description": "The title of the page to be returned. Required for <code>page</code> type.",
+		"required": false,
+		"schema": {
+		    "type": "string"
+		}
+	    },
+	    {
+		"name": "status",
+		"in": "query",
+		"description": "Filter the results to a set of content based on their status. If set to `any`, \ncontent with any status is returned. Note, the `historical` status is currently \nnot supported.",
+		"required": false,
+		"explode": true,
+		"schema": {
+		    "type": "array",
+		    "items": {
+			"type": "string"
+		    },
+		    "enum": [
+			"current",
+			"trashed",
+			"draft",
+			"any"
+		    ],
+		    "default": "current"
+		}
+	    },
+	    {
+		"name": "postingDay",
+		"in": "query",
+		"description": "The posting date of the blog post to be returned. Required for\n<code>blogpost</code> type. Format: <code>yyyy-mm-dd</code>.",
+		"required": false,
+		"schema": {
+		    "type": "string"
+		}
+	    },
+	    {
+		"name": "expand",
+		"in": "query",
+		"description": "A multi-value parameter indicating which properties of the content to expand.\nBy default, the following objects are expanded: `space`, `history`, `version`.\n\n- `childTypes.all` returns whether the content has attachments, comments, or child pages. \nUse this if you only need to check whether the content has children of a particular type.\n- `childTypes.attachment` returns whether the content has attachments.\n- `childTypes.comment` returns whether the content has comments.\n- `childTypes.page` returns whether the content has child pages.\n- `container` returns the space that the content is in. This is the same as the information \nreturned by [Get space](#api-space-spaceKey-get).\n- `metadata.currentuser` returns information about the current user in relation to the content, \nlike when they last viewed it, modified it, contributed to it, or added it as a favourite.\n- `metadata.properties` returns content properties that have been set via the Confluence REST API.\n- `metadata.labels` returns the labels that have been added to the content.\n- `metadata.frontend` (this property is only used by Atlassian)\n- `operations` returns the operations for the content, which are used when setting permissions.\n- `children.page` returns pages that are descendants at the level immediately below the content.\n- `children.attachment` returns all attachments for the content.\n- `children.comment` returns all comments on the content.\n- `restrictions.read.restrictions.user` returns the users that have permission to read the content.\n- `restrictions.read.restrictions.group` returns the groups that have permission to read the content.\n- `restrictions.update.restrictions.user` returns the users that have permission to update the content.\n- `restrictions.update.restrictions.group` returns the groups that have permission to update the content.\n- `history` returns the history of the content, including the date it was created.\n- `history.lastUpdated` returns information about the most recent update of the content, including \nwho updated it and when it was updated.\n- `history.previousVersion` returns information about the update prior to the current content update.\n- `history.contributors` returns all of the users who have contributed to the content.\n- `history.nextVersion` returns information about the update after to the current content update.\n- `ancestors` returns the parent page, if the content is a page.\n- `body` returns the body of the content in different formats, including the editor format, \nview format, and export format.\n- `version` returns information about the most recent update of the content, including who updated it \nand when it was updated.\n- `descendants.page` returns pages that are descendants at any level below the content.\n- `descendants.attachment` returns all attachments for the content, same as `children.attachment`.\n- `descendants.comment` returns all comments on the content, same as `children.comment`.\n- `space` returns the space that the content is in. This is the same as the information returned by \n[Get space](#api-space-spaceKey-get).",
+		"required": false,
+		"style": "form",
+		"schema": {
+		    "type": "array",
+		    "items": {
+			"type": "string",
+			"enum": [
+			    "childTypes.all",
+			    "childTypes.attachment",
+			    "childTypes.comment",
+			    "childTypes.page",
+			    "container",
+			    "metadata.currentuser",
+			    "metadata.properties",
+			    "metadata.labels",
+			    "metadata.frontend",
+			    "operations",
+			    "children.page",
+			    "children.attachment",
+			    "children.comment",
+			    "restrictions.read.restrictions.user",
+			    "restrictions.read.restrictions.group",
+			    "restrictions.update.restrictions.user",
+			    "restrictions.update.restrictions.group",
+			    "history",
+			    "history.lastUpdated",
+			    "history.previousVersion",
+			    "history.contributors",
+			    "history.nextVersion",
+			    "ancestors",
+			    "body",
+			    "version",
+			    "descendants.page",
+			    "descendants.attachment",
+			    "descendants.comment",
+			    "space"
+			]
+		    }
+		}
+	    },
+	    {
+		"name": "trigger",
+		"in": "query",
+		"description": "If set to `viewed`, the request will trigger a 'viewed' event for the content. \nWhen this event is triggered, the page/blogpost will appear on the 'Recently visited' \ntab of the user's Confluence dashboard.",
+		"required": false,
+		"schema": {
+		    "type": "string",
+		    "enum": [
+			"viewed"
+		    ]
+		}
+	    },
+	    {
+		"name": "orderby",
+		"in": "query",
+		"description": "Orders the content by a particular field. Specify the field and sort direction for \nthis parameter, as follows: 'fieldpath asc/desc'. For example, 'history.createdDate desc'.",
+		"required": false,
+		"schema": {
+		    "type": "string"
+		}
+	    },
+	    {
+		"name": "start",
+		"in": "query",
+		"description": "The starting index of the returned content.",
+		"required": false,
+		"schema": {
+		    "type": "integer",
+		    "format": "int32",
+		    "minimum": 0,
+		    "default": 0
+		}
+	    },
+	    {
+		"name": "limit",
+		"in": "query",
+		"description": "The maximum number of content objects to return per page. \nNote, this may be restricted by fixed system limits.",
+		"required": false,
+		"schema": {
+		    "type": "integer",
+		    "format": "int32",
+		    "minimum": 0,
+		    "default": 25
+		}
+	    }
+	],
+	"responses": {
+	    "200": {
+		"description": "Returned if the requested list of content is returned.",
+		"content": {
+		    "application/json": {
+			"schema": {
+			    "$ref": "#/components/schemas/ContentArray"
+			}
+		    }
+		}
+	    },
+	    "401": {
+		"description": "Returned if the authentication credentials are incorrect or missing \nfrom the request."
+	    },
+	    "404": {
+		"description": "Returned if the calling user does not have permission to view the \nrequested content."
+	    }
+	},
+	"x-atlassian-connect-scope": "READ"
+    },
+    "post": {
+	"tags": [
+	    "/content"
+	],
+	"summary": "Create content",
+	"description": "Creates a new piece of content or publishes an existing draft. \n\nTo publish a draft, add the `id` and `status` properties to the body of the request. \nSet the `id` to the ID of the draft and set the `status` to 'current'. When the \nrequest is sent, a new piece of content will be created and the metadata from the \ndraft will be transferred into it.\n\n**[Permissions](https://confluence.atlassian.com/x/_AozKw) required**: 'Add' permission for the \nspace that the content will be created in, and permission to view the draft if publishing a draft.",
+	"operationId": "com.atlassian.confluence.plugins.restapi.resources.ContentResource.createContent_post",
+	"parameters": [
+	    {
+		"name": "status",
+		"in": "query",
+		"description": "Filter the returned content by status.",
+		"required": false,
+		"schema": {
+		    "type": "string",
+		    "default": "current"
+		}
+	    },
+	    {
+		"name": "expand",
+		"in": "query",
+		"description": "A multi-value parameter indicating which properties of the new content to expand. \nBy default, the following objects are expanded: `space`, `history`, `version`.\n\n- `childTypes.all` returns whether the content has attachments, comments, or child pages. \nUse this if you only need to check whether the content has children of a particular type.\n- `childTypes.attachment` returns whether the content has attachments.\n- `childTypes.comment` returns whether the content has comments.\n- `childTypes.page` returns whether the content has child pages.\n- `container` returns the space that the content is in. This is the same as the information \nreturned by [Get space](#api-space-spaceKey-get).\n- `metadata.currentuser` returns information about the current user in relation to the content, \nlike when they last viewed it, modified it, contributed to it, or added it as a favourite.\n- `metadata.properties` returns content properties that have been set via the Confluence REST API.\n- `metadata.labels` returns the labels that have been added to the content.\n- `metadata.frontend` (this property is only used by Atlassian)\n- `operations` returns the operations for the content, which are used when setting permissions.\n- `children.page` returns pages that are descendants at the level immediately below the content.\n- `children.attachment` returns all attachments for the content.\n- `children.comment` returns all comments on the content.\n- `restrictions.read.restrictions.user` returns the users that have permission to read the content.\n- `restrictions.read.restrictions.group` returns the groups that have permission to read the content.\n- `restrictions.update.restrictions.user` returns the users that have permission to update the content.\n- `restrictions.update.restrictions.group` returns the groups that have permission to update the content.\n- `history` returns the history of the content, including the date it was created.\n- `history.lastUpdated` returns information about the most recent update of the content, including \nwho updated it and when it was updated.\n- `history.previousVersion` returns information about the update prior to the current content update.\n- `history.contributors` returns all of the users who have contributed to the content.\n- `history.nextVersion` returns information about the update after to the current content update.\n- `ancestors` returns the parent page, if the content is a page.\n- `body` returns the body of the content in different formats, including the editor format, \nview format, and export format.\n- `version` returns information about the most recent update of the content, including who updated it \nand when it was updated.\n- `descendants.page` returns pages that are descendants at any level below the content.\n- `descendants.attachment` returns all attachments for the content, same as `children.attachment`.\n- `descendants.comment` returns all comments on the content, same as `children.comment`.\n- `space` returns the space that the content is in. This is the same as the information returned by \n[Get space](#api-space-spaceKey-get).",
+		"required": false,
+		"style": "form",
+		"schema": {
+		    "type": "array",
+		    "items": {
+			"type": "string",
+			"enum": [
+			    "childTypes.all",
+			    "childTypes.attachment",
+			    "childTypes.comment",
+			    "childTypes.page",
+			    "container",
+			    "metadata.currentuser",
+			    "metadata.properties",
+			    "metadata.labels",
+			    "metadata.frontend",
+			    "operations",
+			    "children.page",
+			    "children.attachment",
+			    "children.comment",
+			    "restrictions.read.restrictions.user",
+			    "restrictions.read.restrictions.group",
+			    "restrictions.update.restrictions.user",
+			    "restrictions.update.restrictions.group",
+			    "history",
+			    "history.lastUpdated",
+			    "history.previousVersion",
+			    "history.contributors",
+			    "history.nextVersion",
+			    "ancestors",
+			    "body",
+			    "version",
+			    "descendants.page",
+			    "descendants.attachment",
+			    "descendants.comment",
+			    "space"
+			]
+		    }
+		}
+	    }
+	],
+	"responses": {
+	    "200": {
+		"description": "Returned if the content is created.",
+		"content": {
+		    "application/json": {
+			"schema": {
+			    "$ref": "#/components/schemas/Content"
+			}
+		    }
+		}
+	    },
+	    "401": {
+		"description": "Returned if the authentication credentials are incorrect or missing \nfrom the request."
+	    },
+	    "403": {
+		"description": "Returned if;\n\n- The space that the content is being created in does not exist.\n- If the requesting user does not have permission to create content in it."
+	    }
+	},
+	"requestBody": {
+	    "content": {
+		"application/json": {
+		    "schema": {
+			"$ref": "#/components/schemas/ContentCreate"
+		    }
+		}
+	    },
+	    "description": "The new content to be created. Set the `representation` to the name of the body \nformat type. For example, if you use `storage` for the body format, set \n'`representation`=`storage`'.\n\nIf you are not sure how to generate the different formats, you can create a page in the \nConfluence application, retrieve the content using [Get content](#api-content-get), \nand expand the desired content format, e.g. `expand=body.storage`.",
+	    "required": true
+	},
+	"x-atlassian-connect-scope": "WRITE"
+    }
+},
+
+"ContentArray": {
+    "type": "object",
+    "required": [
+	"results",
+	"start",
+	"limit",
+	"size",
+	"_links"
+    ],
+    "additionalProperties": false,
+    "properties": {
+	"results": {
+	    "type": "array",
+	    "items": {
+		"$ref": "#/components/schemas/Content"
+	    }
+	},
+	"start": {
+	    "type": "integer",
+	    "format": "int32"
+	},
+	"limit": {
+	    "type": "integer",
+	    "format": "int32"
+	},
+	"size": {
+	    "type": "integer",
+	    "format": "int32"
+	},
+	"_links": {
+	    "$ref": "#/components/schemas/GenericLinks"
+	}
+    }
+},

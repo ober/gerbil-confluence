@@ -1,0 +1,4370 @@
+{
+  "requestBodies": {
+    "ContentBlueprintDraft": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/ContentBlueprintDraft"
+          }
+        }
+      },
+      "required": true
+    },
+    "com.atlassian.confluence.plugins.restapi.resources.AttachmentResource.createAttachments_post": {
+      "content": {
+        "multipart/form-data": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "description": "The relative location and name of the attachment to be added to \nthe content.",
+                "type": "string",
+                "format": "binary"
+              },
+              "comment": {
+                "description": "The comment for the attachment that is being added.\nIf you specify a comment, then every file must have a comment and \nthe comments must be in the same order as the files. Alternatively, \ndon't specify any comments.",
+                "type": "string",
+                "format": "binary"
+              },
+              "minorEdit": {
+                "description": "If `minorEdits` is set to 'true', no notification email or activity stream \nwill be generated when the attachment is added to the content.",
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "required": [
+              "file",
+              "minorEdit"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "schemas": {
+    "AffectedObject": {
+      "type": "object",
+      "required": [
+        "name",
+        "objectType"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "objectType": {
+          "type": "string"
+        }
+      }
+    },
+    "AttachmentUpdate": {
+      "type": "object",
+      "required": [
+        "version",
+        "id",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "object",
+          "required": [
+            "number"
+          ],
+          "additionalProperties": false,
+          "description": "The attachment version. Set this to the current version number of the \nattachment. Note, the version number only needs to be incremented when \nupdating the actual attachment, not its properties.",
+          "properties": {
+            "number": {
+              "type": "integer",
+              "format": "int32",
+              "description": "The version number."
+            }
+          }
+        },
+        "id": {
+          "type": "string",
+          "description": "The ID of the attachment to be updated."
+        },
+        "type": {
+          "type": "string",
+          "description": "Set this to `attachment`.",
+          "enum": [
+            "attachment"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "description": "The updated name of the attachment.",
+          "maxLength": 255
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mediaType": {
+              "type": "string",
+              "description": "The media type of the attachment, e.g. 'img/jpg'."
+            },
+            "comment": {
+              "type": "string",
+              "description": "The comment for this update."
+            }
+          }
+        },
+        "container": {
+          "type": "object",
+          "description": "The new content to attach the attachment to.",
+          "required": [
+            "id",
+            "type"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The `id` of the parent content."
+            },
+            "type": {
+              "type": "string",
+              "description": "The content type. You can only attach attachments to content \nof type: `page`, `blogpost`."
+            }
+          }
+        }
+      }
+    },
+    "AuditRecord": {
+      "type": "object",
+      "required": [
+        "author",
+        "remoteAddress",
+        "creationDate",
+        "summary",
+        "description",
+        "category",
+        "sysAdmin",
+        "affectedObject",
+        "changedValues",
+        "associatedObjects"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "author": {
+          "type": "object",
+          "required": [
+            "type",
+            "displayName",
+            "operations",
+            "username",
+            "userKey"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "user"
+              ],
+              "default": "user"
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "operations": {
+              "type": "object",
+              "default": null
+            },
+            "username": {
+              "type": "string"
+            },
+            "userKey": {
+              "type": "string"
+            }
+          }
+        },
+        "remoteAddress": {
+          "type": "string"
+        },
+        "creationDate": {
+          "type": "integer",
+          "description": "The creation date-time of the audit record, as a timestamp.",
+          "format": "int64"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "sysAdmin": {
+          "type": "boolean"
+        },
+        "affectedObject": {
+          "$ref": "#/components/schemas/AffectedObject"
+        },
+        "changedValues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ChangedValue"
+          }
+        },
+        "associatedObjects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/AffectedObject"
+          }
+        }
+      }
+    },
+    "AuditRecordArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/AuditRecord"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "AuditRecordCreate": {
+      "type": "object",
+      "required": [
+        "remoteAddress"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "author": {
+          "type": "object",
+          "description": "The user that actioned the event. If `author` is not specified, then all \n`author` properties will be set to null/empty, except for `type` which \nwill be set to 'user'. ",
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Set to 'user'.",
+              "enum": [
+                "user"
+              ],
+              "default": "user"
+            },
+            "displayName": {
+              "type": "string",
+              "description": "The name that is displayed on the audit log in the Confluence UI."
+            },
+            "operations": {
+              "type": "object",
+              "description": "Always defaults to null.",
+              "enum": [
+                null
+              ],
+              "default": null
+            },
+            "username": {
+              "type": "string",
+              "description": "The username of the user that actioned the event."
+            },
+            "userKey": {
+              "type": "string",
+              "description": "The userKey of the user that actioned the event."
+            }
+          }
+        },
+        "remoteAddress": {
+          "type": "string",
+          "description": "The IP address of the computer where the event was initiated from."
+        },
+        "creationDate": {
+          "type": "integer",
+          "description": "The creation date-time of the audit record, as a timestamp. This is converted \nto a date-time display in the Confluence UI. If the `creationDate` is not \nspecified, then it will be set to the timestamp for the current date-time.",
+          "format": "int64"
+        },
+        "summary": {
+          "type": "string",
+          "description": "The summary of the event, which is displayed in the 'Change' column on \nthe audit log in the Confluence UI."
+        },
+        "description": {
+          "type": "string",
+          "description": "A long description of the event, which is displayed in the 'Description' \nfield on the audit log in the Confluence UI."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the event, which is displayed in the 'Event type' column \non the audit log in the Confluence UI.        "
+        },
+        "sysAdmin": {
+          "type": "boolean",
+          "description": "Indicates whether the event was actioned by a system administrator.",
+          "default": false
+        },
+        "affectedObject": {
+          "$ref": "#/components/schemas/AffectedObject"
+        },
+        "changedValues": {
+          "type": "array",
+          "description": "The values that were changed in the event.",
+          "items": {
+            "$ref": "#/components/schemas/ChangedValue"
+          }
+        },
+        "associatedObjects": {
+          "type": "array",
+          "description": "Objects that were associated with the event. For example, if the event \nwas a space permission change then the associated object would be the \nspace.",
+          "items": {
+            "$ref": "#/components/schemas/AffectedObject"
+          }
+        }
+      }
+    },
+    "BlueprintTemplate": {
+      "type": "object",
+      "required": [
+        "templateId",
+        "originalTemplate",
+        "referencingBlueprint",
+        "name",
+        "description",
+        "labels",
+        "templateType",
+        "_expandable",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "templateId": {
+          "type": "string"
+        },
+        "originalTemplate": {
+          "type": "object",
+          "required": [
+            "pluginKey",
+            "moduleKey"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "pluginKey": {
+              "type": "string"
+            },
+            "moduleKey": {
+              "type": "string"
+            }
+          }
+        },
+        "referencingBlueprint": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Label"
+          }
+        },
+        "templateType": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "#/components/schemas/ContentBody"
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "BlueprintTemplateArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/BlueprintTemplate"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ButtonLookAndFeel": {
+      "type": "object",
+      "required": [
+        "backgroundColor",
+        "color"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "backgroundColor": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    },
+    "Breadcrumb": {
+      "type": "object",
+      "required": [
+        "label",
+        "url",
+        "separator"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "separator": {
+          "type": "string"
+        }
+      }
+    },
+    "ChangedValue": {
+      "type": "object",
+      "required": [
+        "name",
+        "oldValue",
+        "newValue"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "oldValue": {
+          "type": "string"
+        },
+        "newValue": {
+          "type": "string"
+        }
+      }
+    },
+    "Container": {
+      "type": "object",
+      "description": "Container for content. This can be either a space (containing a page or blogpost) \nor a page/blog post (containing an attachment or comment)",
+      "additionalProperties": true
+    },
+    "ContainerLookAndFeel": {
+      "type": "object",
+      "required": [
+        "background",
+        "backgroundColor",
+        "backgroundImage",
+        "backgroundSize",
+        "padding",
+        "borderRadius"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "background": {
+          "type": "string"
+        },
+        "backgroundColor": {
+          "type": "string"
+        },
+        "backgroundImage": {
+          "type": "string"
+        },
+        "backgroundSize": {
+          "type": "string"
+        },
+        "padding": {
+          "type": "string"
+        },
+        "borderRadius": {
+          "type": "string"
+        }
+      }
+    },
+    "ContainerSummary": {
+      "type": "object",
+      "required": [
+        "title",
+        "displayUrl"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "displayUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "Content": {
+      "type": "object",
+      "description": "Base object for all content types.",
+      "required": [
+        "id",
+        "type",
+        "status",
+        "title",
+        "_expandable"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "space": {
+          "$ref": "#/components/schemas/Space"
+        },
+        "history": {
+          "$ref": "#/components/schemas/ContentHistory"
+        },
+        "version": {
+          "$ref": "#/components/schemas/Version"
+        },
+        "ancestors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Content"
+          }
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/OperationCheckResult"
+          }
+        },
+        "children": {
+          "$ref": "#/components/schemas/ContentChildren"
+        },
+        "childTypes": {
+          "$ref": "#/components/schemas/ContentChildType"
+        },
+        "descendants": {
+          "$ref": "#/components/schemas/ContentChildren"
+        },
+        "container": {
+          "$ref": "#/components/schemas/Container"
+        },
+        "body": {
+          "type": "object",
+          "required": [
+            "_expandable"
+          ],
+          "minProperties": 1,
+          "maxProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "view": {
+              "$ref": "#/components/schemas/ContentBody"
+            },
+            "export_view": {
+              "$ref": "#/components/schemas/ContentBody"
+            },
+            "styled_view": {
+              "$ref": "#/components/schemas/ContentBody"
+            },
+            "storage": {
+              "$ref": "#/components/schemas/ContentBody"
+            },
+            "editor2": {
+              "$ref": "#/components/schemas/ContentBody"
+            },
+            "anonymous_export_view": {
+              "$ref": "#/components/schemas/ContentBody"
+            },
+            "_expandable": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "editor": {
+                  "type": "string"
+                },
+                "view": {
+                  "type": "string"
+                },
+                "export_view": {
+                  "type": "string"
+                },
+                "styled_view": {
+                  "type": "string"
+                },
+                "storage": {
+                  "type": "string"
+                },
+                "editor2": {
+                  "type": "string"
+                },
+                "anonymous_export_view": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "restrictions": {
+          "type": "object",
+          "required": [
+            "_links"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "read": {
+              "$ref": "#/components/schemas/ContentRestriction"
+            },
+            "update": {
+              "$ref": "#/components/schemas/ContentRestriction"
+            },
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          }
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "childTypes": {
+              "type": "string"
+            },
+            "container": {
+              "type": "string"
+            },
+            "metadata": {
+              "type": "string"
+            },
+            "operations": {
+              "type": "string"
+            },
+            "children": {
+              "type": "string"
+            },
+            "restrictions": {
+              "type": "string"
+            },
+            "history": {
+              "type": "string"
+            },
+            "ancestors": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "descendants": {
+              "type": "string"
+            },
+            "space": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Content"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentAttachment": {
+      "description": "Representation of an attachment (content)",
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/Content"
+        },
+        {
+          "type": "object",
+          "required": [
+            "metadata",
+            "extensions",
+            "_links"
+          ],
+          "properties": {
+            "metadata": {
+              "type": "object",
+              "properties": {
+                "mediaType": {
+                  "type": "string"
+                }
+              }
+            },
+            "extensions": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ContentBlogpost": {
+      "description": "Representation of a blogpost (content)",
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/Content"
+        },
+        {
+          "type": "object",
+          "required": [
+            "metadata",
+            "_links"
+          ],
+          "properties": {
+            "metadata": {
+              "$ref": "#/components/schemas/ContentMetadata"
+            },
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ContentBlueprintDraft": {
+      "type": "object",
+      "required": [
+        "version",
+        "title",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "object",
+          "description": "The version for the new content.",
+          "required": [
+            "number"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "number": {
+              "type": "integer",
+              "format": "int32",
+              "description": "The version number. Set this to `1`."
+            }
+          }
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the content. If you don't want to change the title, \nset this to the current title of the draft.",
+          "maxLength": 255
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of content. Set this to `page`.",
+          "enum": [
+            "page"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the content. Set this to `current` or omit it altogether.",
+          "enum": [
+            "current"
+          ],
+          "default": "current"
+        },
+        "space": {
+          "type": "object",
+          "required": [
+            "key"
+          ],
+          "description": "The space for the content.",
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string",
+              "format": "int32",
+              "description": "The key of the space"
+            }
+          }
+        },
+        "ancestors": {
+          "type": "array",
+          "description": "The new ancestor (i.e. parent page) for the content. If you have \nspecified an ancestor, you must also specify a `space` property \nin the request body for the space that the ancestor is in.\n\nNote, if you specify more than one ancestor, the last ID in the array \nwill be selected as the parent page for the content.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The content ID of the ancestor."
+              }
+            }
+          }
+        }
+      }
+    },
+    "ContentBody": {
+      "type": "object",
+      "required": [
+        "value",
+        "representation",
+        "_expandable"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "representation": {
+          "type": "string",
+          "enum": [
+            "view",
+            "export_view",
+            "styled_view",
+            "storage",
+            "editor2",
+            "anonymous_export_view"
+          ]
+        },
+        "embeddedContent": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/EmbeddedContent"
+          }
+        },
+        "webresource": {
+          "$ref": "#/components/schemas/WebResourceDependencies"
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "ContentBodyCreate": {
+      "type": "object",
+      "description": "This object is used when creating or updating content.",
+      "required": [
+        "value",
+        "representation"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "The body of the content in the relevant format."
+        },
+        "representation": {
+          "type": "string",
+          "description": "The content format type. Set the value of this property to \nthe name of the format being used, e.g. 'storage'.",
+          "enum": [
+            "view",
+            "export_view",
+            "styled_view",
+            "storage",
+            "editor2",
+            "anonymous_export_view"
+          ]
+        }
+      }
+    },
+    "ContentChildren": {
+      "type": "object",
+      "required": [
+        "_expandable",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "attachment": {
+          "$ref": "#/components/schemas/ContentArray"
+        },
+        "comment": {
+          "$ref": "#/components/schemas/ContentArray"
+        },
+        "page": {
+          "$ref": "#/components/schemas/ContentArray"
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "attachment": {
+              "type": "string"
+            },
+            "comment": {
+              "type": "string"
+            },
+            "page": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentChildType": {
+      "type": "object",
+      "description": "Shows whether a piece of content has attachments, comments, or child pages.\nNote, this doesn't actually contain the child objects.",
+      "required": [
+        "_expandable"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "attachment": {
+          "type": "object",
+          "required": [
+            "value",
+            "_links"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "boolean"
+            },
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          }
+        },
+        "comment": {
+          "type": "object",
+          "required": [
+            "value",
+            "_links"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "boolean"
+            },
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          }
+        },
+        "page": {
+          "type": "object",
+          "required": [
+            "value",
+            "_links"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "boolean"
+            },
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          }
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "type": "string"
+            },
+            "attachment": {
+              "type": "string"
+            },
+            "comment": {
+              "type": "string"
+            },
+            "page": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "ContentComment": {
+      "description": "Representation of a comment (content)",
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/Content"
+        },
+        {
+          "type": "object",
+          "required": [
+            "metadata",
+            "extensions",
+            "_links"
+          ],
+          "properties": {
+            "metadata": {
+              "$ref": "#/components/schemas/ContentMetadata"
+            },
+            "extensions": {
+              "type": "object",
+              "required": [
+                "location"
+              ],
+              "properties": {
+                "location": {
+                  "type": "string"
+                },
+                "inlineProperties": {
+                  "type": "object",
+                  "required": [
+                    "originalSelection",
+                    "markerRef"
+                  ],
+                  "properties": {
+                    "originalSelection": {
+                      "type": "string"
+                    },
+                    "markerRef": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "resolution": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "lastModifier": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "profilePicture": {
+                          "$ref": "#/components/schemas/Icon"
+                        },
+                        "displayName": {
+                          "type": "string"
+                        },
+                        "operations": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/OperationCheckResult"
+                          }
+                        }
+                      }
+                    },
+                    "lastModifiedDate": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            },
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ContentCreate": {
+      "type": "object",
+      "required": [
+        "title",
+        "type",
+        "space",
+        "body"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The ID of the draft content. Required when publishing a draft."
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of the new content. Custom content types defined by apps are also supported.",
+          "enum": [
+            "page",
+            "blogpost",
+            "comment",
+            "attachment"
+          ]
+        },
+        "space": {
+          "type": "object",
+          "required": [
+            "key"
+          ],
+          "description": "The space that the content is being created in.",
+          "properties": {
+            "key": {
+              "type": "string",
+              "description": "The key of the space."
+            }
+          }
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the new content.",
+          "enum": [
+            "current",
+            "trashed",
+            "historical",
+            "draft"
+          ],
+          "default": "current"
+        },
+        "ancestors": {
+          "type": "array",
+          "description": "The parent content of the new content. Only one parent content \n`id` can be specified.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The `id` of the parent content."
+              }
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "The body of the new content. Does not apply to attachments. \nOnly one body format should be specified as the property for \nthis object, e.g. `storage`.\n\nNote, `editor2` format is used by Atlassian only. `anonymous_export_view` is \nthe same as 'export_view' format but only content viewable by an anonymous \nuser is included.",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "view": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "export_view": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "styled_view": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "storage": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "editor2": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "anonymous_export_view": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ContentHistory": {
+      "type": "object",
+      "required": [
+        "latest",
+        "createdBy",
+        "createdDate"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "latest": {
+          "type": "boolean"
+        },
+        "createdBy": {
+          "$ref": "#/components/schemas/User"
+        },
+        "createdDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastUpdated": {
+          "$ref": "#/components/schemas/Version"
+        },
+        "previousVersion": {
+          "$ref": "#/components/schemas/Version"
+        },
+        "contributors": {
+          "type": "object",
+          "properties": {
+            "publishers": {
+              "$ref": "#/components/schemas/UsersUserKeys"
+            }
+          }
+        },
+        "nextVersion": {
+          "$ref": "#/components/schemas/Version"
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "lastUpdated": {
+              "type": "string"
+            },
+            "previousVersion": {
+              "type": "string"
+            },
+            "contributors": {
+              "type": "string"
+            },
+            "nextVersion": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentId": {
+      "type": "string"
+    },
+    "ContentLookAndFeel": {
+      "type": "object",
+      "required": [
+        "screen",
+        "container",
+        "header",
+        "body"
+      ],
+      "properties": {
+        "screen": {
+          "$ref": "#/components/schemas/ScreenLookAndFeel"
+        },
+        "container": {
+          "$ref": "#/components/schemas/ContainerLookAndFeel"
+        },
+        "header": {
+          "$ref": "#/components/schemas/ContainerLookAndFeel"
+        },
+        "body": {
+          "$ref": "#/components/schemas/ContainerLookAndFeel"
+        }
+      }
+    },
+    "ContentMetadata": {
+      "type": "object",
+      "description": "Metadata object for page, blogpost, comment content",
+      "properties": {
+        "currentuser": {
+          "type": "object",
+          "properties": {
+            "favourited": {
+              "type": "object",
+              "properties": {
+                "isFavourite": {
+                  "type": "boolean"
+                },
+                "favouritedDate": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "lastmodified": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "$ref": "#/components/schemas/Version"
+                },
+                "friendlyLastModified": {
+                  "type": "string"
+                }
+              }
+            },
+            "lastcontributed": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string"
+                },
+                "when": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "viewed": {
+              "type": "object",
+              "properties": {
+                "lastSeen": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "friendlyLastSeen": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "properties": {
+          "$ref": "#/components/schemas/GenericLinks"
+        },
+        "frontend": {
+          "type": "object"
+        },
+        "labels": {
+          "$ref": "#/components/schemas/LabelArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ContentPage": {
+      "description": "Representation of a page (content)",
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/Content"
+        },
+        {
+          "type": "object",
+          "required": [
+            "metadata",
+            "extensions",
+            "_links"
+          ],
+          "properties": {
+            "metadata": {
+              "$ref": "#/components/schemas/ContentMetadata"
+            },
+            "extensions": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ContentProperty": {
+      "type": "object",
+      "required": [
+        "id",
+        "key",
+        "value",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object",
+          "description": "The value of the content property. This can be empty or a complex object. ",
+          "additionalProperties": true
+        },
+        "version": {
+          "type": "object",
+          "required": [
+            "when",
+            "message",
+            "number",
+            "minorEdit"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "when": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "message": {
+              "type": "string"
+            },
+            "number": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "minorEdit": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "$ref": "#/components/schemas/Content"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentPropertyArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ContentProperty"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentPropertyCreate": {
+      "type": "object",
+      "required": [
+        "key",
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The key of the new property.",
+          "maxLength": 255
+        },
+        "value": {
+          "$ref": "#/components/schemas/PropertyValue"
+        }
+      }
+    },
+    "ContentPropertyCreateNoKey": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "$ref": "#/components/schemas/PropertyValue"
+        }
+      }
+    },
+    "ContentPropertyUpdate": {
+      "type": "object",
+      "required": [
+        "value",
+        "version"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "object",
+          "description": "The value of the property.",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "version": {
+          "type": "object",
+          "description": "The version number of the property.",
+          "required": [
+            "number"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "number": {
+              "type": "integer",
+              "format": "int32",
+              "description": "The new version for the updated content property. Set this to the\ncurrent version number incremented by one. To get the current\nversion number, use 'Get content property' and retrieve\n`version.number`."
+            },
+            "minorEdit": {
+              "type": "boolean",
+              "description": "If `minorEdit` is set to 'true', no notification email or activity\nstream will be generated for the change.",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    "ContentRestriction": {
+      "type": "object",
+      "required": [
+        "operation",
+        "_expandable",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": [
+            "administer",
+            "copy",
+            "create",
+            "delete",
+            "export",
+            "move",
+            "purge",
+            "purge_version",
+            "read",
+            "restore",
+            "update",
+            "use"
+          ]
+        },
+        "restrictions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "user": {
+              "$ref": "#/components/schemas/UserArray"
+            },
+            "group": {
+              "$ref": "#/components/schemas/GroupArray"
+            },
+            "_expandable": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "user": {
+                  "type": "string"
+                },
+                "group": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "content": {
+          "$ref": "#/components/schemas/Content"
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "restrictions": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentRestrictionArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "restrictionsHash",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ContentRestriction"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "restrictionsHash": {
+          "type": "string",
+          "description": "This property is used by the UI to figure out whether a set of restrictions \nhas changed."
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentRestrictionUpdate": {
+      "type": "object",
+      "required": [
+        "operation",
+        "restrictions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "operation": {
+          "type": "string",
+          "description": "The restriction operation applied to content.",
+          "enum": [
+            "administer",
+            "copy",
+            "create",
+            "delete",
+            "export",
+            "move",
+            "purge",
+            "purge_version",
+            "read",
+            "restore",
+            "update",
+            "use"
+          ]
+        },
+        "restrictions": {
+          "type": "object",
+          "description": "The users/groups that the restrictions will be applied to. At least one of \n`user` or `group` must be specified for this object.",
+          "additionalProperties": false,
+          "properties": {
+            "user": {
+              "type": "array",
+              "description": "The users that the restrictions will be applied to. This array must \nhave at least one item, otherwise it should be omitted.",
+              "items": {
+                "type": "object",
+                "description": "A user that the restriction will be applied to. Either the `username` \nor the `userKey` must be specified to identify the user.",
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Set to 'known'.",
+                    "enum": [
+                      "known",
+                      "unknown",
+                      "anonymous",
+                      "user"
+                    ]
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "This property has been deprecated due to privacy changes. Use `accountId` instead. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details.\n\nThe username of the user. For example, _admin_. Required, unless `accountId` or `userKey` is specified."
+                  },
+                  "userKey": {
+                    "type": "string",
+                    "description": "This property has been deprecated due to privacy changes. Use `accountId` instead. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details.\n\nThe user key of the user. Required, unless `accountId` or `username` is specified."
+                  },
+                  "accountId": {
+                    "type": "string",
+                    "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products.\nFor example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`. Required, unless `username` or `userKey` is specified."
+                  }
+                }
+              }
+            },
+            "group": {
+              "type": "array",
+              "description": "The groups that the restrictions will be applied to. This array must \nhave at least one item, otherwise it should be omitted.",
+              "items": {
+                "type": "object",
+                "description": "A group that the restriction will be applied to.",
+                "required": [
+                  "type",
+                  "name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Set to 'group'.",
+                    "enum": [
+                      "group"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the group."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ContentRestrictionUpdateArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/ContentRestrictionUpdate"
+      }
+    },
+    "ContentTemplate": {
+      "type": "object",
+      "required": [
+        "templateId",
+        "name",
+        "description",
+        "labels",
+        "templateType",
+        "_expandable",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "templateId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Label"
+          }
+        },
+        "templateType": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "#/components/schemas/ContentBody"
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentTemplateArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ContentTemplate"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ContentTemplateCreate": {
+      "type": "object",
+      "description": "This object is used to create content templates.",
+      "required": [
+        "name",
+        "templateType",
+        "body"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the new template."
+        },
+        "templateType": {
+          "type": "string",
+          "description": "The type of the new template. Set to `page`."
+        },
+        "body": {
+          "$ref": "#/components/schemas/ContentBodyCreate"
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the new template.",
+          "maxLength": 255
+        },
+        "labels": {
+          "type": "array",
+          "description": "Labels for the new template.",
+          "items": {
+            "$ref": "#/components/schemas/Label"
+          }
+        },
+        "space": {
+          "type": "object",
+          "description": "The key for the space of the new template. Only applies to space templates. \nIf the spaceKey is not specified, the template will be created as a global \ntemplate.",
+          "required": [
+            "key"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "ContentTemplateUpdate": {
+      "type": "object",
+      "description": "This object is used to update content templates.",
+      "required": [
+        "templateId",
+        "name",
+        "templateType",
+        "body"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "templateId": {
+          "type": "string",
+          "description": "The ID of the template being updated."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the template. Set to the current `name` if this field is \nnot being updated."
+        },
+        "templateType": {
+          "type": "string",
+          "description": "The type of the template. Set to `page`.",
+          "enum": [
+            "page"
+          ]
+        },
+        "body": {
+          "$ref": "#/components/schemas/ContentBodyCreate"
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the template.",
+          "maxLength": 100
+        },
+        "labels": {
+          "type": "array",
+          "description": "Labels for the template.",
+          "items": {
+            "$ref": "#/components/schemas/Label"
+          }
+        },
+        "space": {
+          "type": "object",
+          "description": "The key for the space of the template. Required if the template is a \nspace template. Set this to the current `space.key`.",
+          "required": [
+            "key"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "ContentUpdate": {
+      "type": "object",
+      "required": [
+        "version",
+        "title",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "object",
+          "required": [
+            "number"
+          ],
+          "additionalProperties": false,
+          "description": "The new version for the updated content. Set this to the current version number incremented by one, unless you are changing the status to 'draft' which must have a version number of 1. \n\nTo get the current version number, use [Get content by ID](#api-content-id-get) and retrieve `version.number`.",
+          "properties": {
+            "number": {
+              "type": "integer",
+              "format": "int32",
+              "description": "The version number."
+            }
+          }
+        },
+        "title": {
+          "type": "string",
+          "description": "The updated title of the content. If you are not changing this field, set this to the current `title`.",
+          "maxLength": 255
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of content. Set this to the current type of the content.",
+          "enum": [
+            "page",
+            "blogpost",
+            "comment",
+            "attachment"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "The updated status of the content. Note, if you change the status of a page from \n'current' to 'draft' and it has an existing draft, the existing draft will be deleted \nin favor of the updated page.",
+          "enum": [
+            "current",
+            "trashed",
+            "historical",
+            "draft"
+          ]
+        },
+        "ancestors": {
+          "type": "array",
+          "description": "The new parent for the content. Only one parent content 'id' can be specified.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The `id` of the parent content."
+              }
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "description": "The updated body of the content. Does not apply to attachments.\nIf you are not sure how to generate these formats, you can create a page in the \nConfluence application, retrieve the content using [Get content](#api-content-get), \nand expand the desired content format, e.g. `expand=body.storage`.",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "view": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "export_view": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "styled_view": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "storage": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "editor2": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            },
+            "anonymous_export_view": {
+              "$ref": "#/components/schemas/ContentBodyCreate"
+            }
+          }
+        }
+      }
+    },
+    "CopyPageHierarchyRequest": {
+      "type": "object",
+      "properties": {
+        "copyAttachments": {
+          "type": "boolean"
+        },
+        "copyPermissions": {
+          "type": "boolean"
+        },
+        "copyProperties": {
+          "type": "boolean"
+        },
+        "copyLabels": {
+          "type": "boolean"
+        },
+        "originalPageId": {
+          "$ref": "#/components/schemas/ContentId"
+        },
+        "destinationPageId": {
+          "$ref": "#/components/schemas/ContentId"
+        },
+        "titleOptions": {
+          "$ref": "#/components/schemas/CopyPageHierarchyTitleOptions"
+        }
+      }
+    },
+    "CopyPageHierarchyTitleOptions": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+          "type": "string"
+        },
+        "replace": {
+          "type": "string"
+        },
+        "search": {
+          "type": "string"
+        }
+      }
+    },
+    "Embeddable": {
+      "type": "object"
+    },
+    "EmbeddedContent": {
+      "type": "object",
+      "properties": {
+        "entityId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "entity": {
+          "$ref": "#/components/schemas/Embeddable"
+        }
+      }
+    },
+    "GenericLinks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "Group": {
+      "type": "object",
+      "required": [
+        "type",
+        "name",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "group"
+          ],
+          "default": "group"
+        },
+        "name": {
+          "type": "string"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "GroupArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Group"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "GroupArrayWithLinks": {
+      "description": "Same as GroupArray but with `_links` property.",
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/GroupArray"
+        },
+        {
+          "type": "object",
+          "required": [
+            "_links"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          }
+        }
+      ]
+    },
+    "HeaderLookAndFeel": {
+      "type": "object",
+      "required": [
+        "backgroundColor",
+        "button",
+        "primaryNavigation",
+        "secondaryNavigation",
+        "search"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "backgroundColor": {
+          "type": "string"
+        },
+        "button": {
+          "$ref": "#/components/schemas/ButtonLookAndFeel"
+        },
+        "primaryNavigation": {
+          "$ref": "#/components/schemas/NavigationLookAndFeel"
+        },
+        "secondaryNavigation": {
+          "$ref": "#/components/schemas/NavigationLookAndFeel"
+        },
+        "search": {
+          "$ref": "#/components/schemas/SearchFieldLookAndFeel"
+        }
+      }
+    },
+    "Icon": {
+      "type": "object",
+      "description": "This object represents an icon. If used as a profilePicture, this may be returned as null, depending on the user's privacy setting.",
+      "required": [
+        "path",
+        "width",
+        "height",
+        "isDefault"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "width": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "height": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "isDefault": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Label": {
+      "type": "object",
+      "required": [
+        "prefix",
+        "name",
+        "id",
+        "label"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "prefix": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "LabelArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Label"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "LabelCreate": {
+      "type": "object",
+      "required": [
+        "prefix",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "prefix": {
+          "type": "string",
+          "description": "The prefix for the label.",
+          "enum": [
+            "global",
+            "my",
+            "team"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the label, which will be shown in the UI."
+        }
+      }
+    },
+    "LabelCreateArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/LabelCreate"
+      }
+    },
+    "LookAndFeel": {
+      "type": "object",
+      "required": [
+        "headings",
+        "links",
+        "menus",
+        "header",
+        "content",
+        "bordersAndDividers"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "headings": {
+          "type": "object",
+          "required": [
+            "color"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "type": "string"
+            }
+          }
+        },
+        "links": {
+          "type": "object",
+          "required": [
+            "color"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "type": "string"
+            }
+          }
+        },
+        "menus": {
+          "$ref": "#/components/schemas/MenusLookAndFeel"
+        },
+        "header": {
+          "$ref": "#/components/schemas/HeaderLookAndFeel"
+        },
+        "content": {
+          "$ref": "#/components/schemas/ContentLookAndFeel"
+        },
+        "bordersAndDividers": {
+          "type": "object",
+          "required": [
+            "color"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "color": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "LookAndFeelUpdated": {
+      "description": "Look and feel settings returned after an update.",
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/LookAndFeel"
+        },
+        {
+          "type": "object",
+          "required": [
+            "_links"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          }
+        }
+      ]
+    },
+    "LookAndFeelSettings": {
+      "type": "object",
+      "required": [
+        "selected",
+        "global",
+        "custom"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "selected": {
+          "type": "string",
+          "enum": [
+            "global",
+            "custom"
+          ]
+        },
+        "global": {
+          "$ref": "#/components/schemas/LookAndFeel"
+        },
+        "theme": {
+          "$ref": "#/components/schemas/LookAndFeel"
+        },
+        "custom": {
+          "$ref": "#/components/schemas/LookAndFeel"
+        }
+      }
+    },
+    "LookAndFeelType": {
+      "type": "object",
+      "description": "The object for choosing the look and feel settings for the site or a space.",
+      "required": [
+        "selected"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "selected": {
+          "type": "string",
+          "description": "The look and feel scheme. If you set this to `global`, you must specify \nthe current global look and feel settings as a `global` object in this \nrequest. Similarly, if you set this to `custom`, you must specify the \ncurrent custom look and feel settings as a `custom` object in this request.",
+          "enum": [
+            "global",
+            "custom"
+          ]
+        },
+        "global": {
+          "$ref": "#/components/schemas/LookAndFeel"
+        },
+        "custom": {
+          "$ref": "#/components/schemas/LookAndFeel"
+        }
+      }
+    },
+    "LongTaskStatus": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "elapsedTime",
+        "percentageComplete",
+        "successful",
+        "messages"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "object",
+          "required": [
+            "key",
+            "args"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "elapsedTime": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "percentageComplete": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "successful": {
+          "type": "boolean"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Message"
+          }
+        }
+      }
+    },
+    "LongTaskStatusArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/LongTaskStatus"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "LongTaskStatusWithLinks": {
+      "description": "Same as LongTaskStatus but with `_links` property.",
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/LongTaskStatus"
+        },
+        {
+          "type": "object",
+          "required": [
+            "_links"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          }
+        }
+      ]
+    },
+    "MacroInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "MenusLookAndFeel": {
+      "type": "object",
+      "required": [
+        "hoverOrFocus",
+        "color"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "hoverOrFocus": {
+          "type": "object",
+          "required": [
+            "backgroundColor"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            }
+          }
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    },
+    "Message": {
+      "type": "object",
+      "required": [
+        "translation",
+        "args"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "translation": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "MigratedUser": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "accountId": {
+          "type": "string"
+        }
+      }
+    },
+    "MigratedUserArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/MigratedUser"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "NavigationLookAndFeel": {
+      "type": "object",
+      "required": [
+        "color",
+        "hoverOrFocus"
+      ],
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "hoverOrFocus": {
+          "type": "object",
+          "required": [
+            "backgroundColor",
+            "color"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "color": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "OperationCheckResult": {
+      "type": "object",
+      "description": "An operation and the target entity that it applies to, e.g. create page.",
+      "required": [
+        "operation",
+        "targetType"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "operation": {
+          "type": "string",
+          "description": "The operation itself.",
+          "enum": [
+            "administer",
+            "copy",
+            "create",
+            "delete",
+            "export",
+            "move",
+            "purge",
+            "purge_version",
+            "read",
+            "restore",
+            "update",
+            "use"
+          ]
+        },
+        "targetType": {
+          "type": "string",
+          "description": "The space or content type that the operation applies to.",
+          "enum": [
+            "page",
+            "blogpost",
+            "comment",
+            "attachment",
+            "space"
+          ]
+        }
+      }
+    },
+    "PropertyValue": {
+      "type": "object",
+      "description": "The value of the property. This can be empty or a complex object. \nFor example,\n```\n\"value\": {\n  \"example1\": \"value\",\n  \"example2\": true,\n  \"example3\": 123\n}\n```",
+      "additionalProperties": true
+    },
+    "Relation": {
+      "type": "object",
+      "required": [
+        "name",
+        "_expandable",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "relationData": {
+          "$ref": "#/components/schemas/RelationData"
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "target": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "_expandable": {
+          "type": "object",
+          "required": [
+            "relationData",
+            "source",
+            "target"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "relationData": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "target": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "RelationArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Relation"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "RelationData": {
+      "type": "object",
+      "properties": {
+        "createdBy": {
+          "$ref": "#/components/schemas/User"
+        },
+        "createdDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "friendlyCreatedDate": {
+          "type": "string"
+        }
+      }
+    },
+    "RetentionPeriod": {
+      "type": "object",
+      "required": [
+        "number",
+        "units"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "number": {
+          "type": "integer",
+          "description": "The number of units for the retention period.",
+          "format": "int32"
+        },
+        "units": {
+          "type": "string",
+          "description": "The unit of time that the retention period is measured in.",
+          "enum": [
+            "NANOS",
+            "MICROS",
+            "MILLIS",
+            "SECONDS",
+            "MINUTES",
+            "HOURS",
+            "HALF_DAYS",
+            "DAYS",
+            "WEEKS",
+            "MONTHS",
+            "YEARS",
+            "DECADES",
+            "CENTURIES",
+            "MILLENNIA",
+            "ERAS",
+            "FOREVER"
+          ]
+        }
+      }
+    },
+    "ScreenLookAndFeel": {
+      "type": "object",
+      "required": [
+        "background",
+        "backgroundColor",
+        "backgroundImage",
+        "backgroundSize",
+        "gutterTop",
+        "gutterRight",
+        "gutterBottom",
+        "gutterLeft"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "background": {
+          "type": "string"
+        },
+        "backgroundColor": {
+          "type": "string"
+        },
+        "backgroundImage": {
+          "type": "string"
+        },
+        "backgroundSize": {
+          "type": "string"
+        },
+        "gutterTop": {
+          "type": "string"
+        },
+        "gutterRight": {
+          "type": "string"
+        },
+        "gutterBottom": {
+          "type": "string"
+        },
+        "gutterLeft": {
+          "type": "string"
+        }
+      }
+    },
+    "SearchFieldLookAndFeel": {
+      "type": "object",
+      "required": [
+        "backgroundColor",
+        "color"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "backgroundColor": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    },
+    "SearchPageResponseSearchResult": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "totalSize",
+        "cqlQuery",
+        "searchDuration",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/SearchResult"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "cqlQuery": {
+          "type": "string"
+        },
+        "searchDuration": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "SearchResult": {
+      "type": "object",
+      "required": [
+        "content",
+        "title",
+        "excerpt",
+        "url",
+        "resultParentContainer",
+        "resultGlobalContainer",
+        "breadcrumbs",
+        "entityType",
+        "iconCssClass",
+        "lastModified",
+        "friendlyLastModified"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "$ref": "#/components/schemas/Content"
+        },
+        "title": {
+          "type": "string"
+        },
+        "excerpt": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "resultParentContainer": {
+          "$ref": "#/components/schemas/ContainerSummary"
+        },
+        "resultGlobalContainer": {
+          "$ref": "#/components/schemas/ContainerSummary"
+        },
+        "breadcrumbs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Breadcrumb"
+          }
+        },
+        "entityType": {
+          "type": "string"
+        },
+        "iconCssClass": {
+          "type": "string"
+        },
+        "lastModified": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "friendlyLastModified": {
+          "type": "string"
+        }
+      }
+    },
+    "Space": {
+      "type": "object",
+      "required": [
+        "id",
+        "key",
+        "name",
+        "type",
+        "status",
+        "_expandable",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "key": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "icon": {
+          "$ref": "#/components/schemas/Icon"
+        },
+        "description": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "plain": {
+              "$ref": "#/components/schemas/SpaceDescription"
+            },
+            "view": {
+              "$ref": "#/components/schemas/SpaceDescription"
+            }
+          }
+        },
+        "homepage": {
+          "$ref": "#/components/schemas/Content"
+        },
+        "type": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "required": [
+            "labels"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "labels": {
+              "$ref": "#/components/schemas/LabelArray"
+            }
+          }
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/OperationCheckResult"
+          }
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/SpacePermission"
+          }
+        },
+        "status": {
+          "type": "string"
+        },
+        "settings": {
+          "$ref": "#/components/schemas/SpaceSettings"
+        },
+        "theme": {
+          "$ref": "#/components/schemas/Theme"
+        },
+        "lookAndFeel": {
+          "$ref": "#/components/schemas/LookAndFeel"
+        },
+        "history": {
+          "type": "object",
+          "required": [
+            "createdDate"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "createdDate": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "_expandable": {
+          "type": "object",
+          "properties": {
+            "settings": {
+              "type": "string"
+            },
+            "metadata": {
+              "type": "string"
+            },
+            "operations": {
+              "type": "string"
+            },
+            "lookAndFeel": {
+              "type": "string"
+            },
+            "permissions": {
+              "type": "string"
+            },
+            "icon": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "theme": {
+              "type": "string"
+            },
+            "history": {
+              "type": "string"
+            },
+            "homepage": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "SpaceArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Space"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "SpaceCreate": {
+      "type": "object",
+      "description": "This is the request object used when creating a new space.",
+      "required": [
+        "key",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The key for the new space. Format: See [Space\nkeys](https://confluence.atlassian.com/x/lqNMMQ)."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the new space.",
+          "maxLength": 200
+        },
+        "description": {
+          "$ref": "#/components/schemas/SpaceDescriptionCreate"
+        },
+        "permissions": {
+          "type": "array",
+          "description": "The permissions for the new space. If no permissions are provided, the \n[Confluence default space permissions](https://confluence.atlassian.com/x/UAgzKw#CreateaSpace-Spacepermissions)\nare applied. Note, for security reasons, permissions cannot be changed\nvia the API after the space has been created, and must be changed via\nthe user interface instead.",
+          "items": {
+            "$ref": "#/components/schemas/SpacePermission"
+          }
+        }
+      }
+    },
+    "SpaceDescription": {
+      "type": "object",
+      "required": [
+        "value",
+        "representation",
+        "embeddedContent"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "representation": {
+          "type": "string",
+          "enum": [
+            "plain",
+            "view"
+          ]
+        },
+        "embeddedContent": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "SpaceDescriptionCreate": {
+      "type": "object",
+      "description": "The description of the new/updated space. Note, only the 'plain' representation \ncan be used for the description when creating or updating a space.",
+      "required": [
+        "plain"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "plain": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "The space description."
+            },
+            "representation": {
+              "type": "string",
+              "description": "Set to 'plain'."
+            }
+          }
+        }
+      }
+    },
+    "SpacePermission": {
+      "type": "object",
+      "description": "This object represents the permissions for a space. Permissions consist of \nat least one operation object with an accompanying subjects object.\n\nThe following combinations of `operation` and `targetType` values are \nvalid for the `operation` object:\n\n  - 'create': 'page', 'blogpost', 'comment', 'attachment'\n  - 'read': 'space'\n  - 'delete': 'page', 'blogpost', 'comment', 'attachment'\n  - 'export': 'space'\n  - 'administer': 'space'",
+      "required": [
+        "subjects",
+        "operation",
+        "anonymousAccess",
+        "unlicensedAccess"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "subjects": {
+          "type": "object",
+          "description": "The users and/or groups that the permission applies to.",
+          "required": [
+            "_expandable"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "user": {
+              "type": "object",
+              "required": [
+                "results",
+                "size"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                },
+                "size": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "group": {
+              "type": "object",
+              "required": [
+                "results",
+                "size"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Group"
+                  }
+                },
+                "size": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "_expandable": {
+              "type": "object",
+              "properties": {
+                "user": {
+                  "type": "string"
+                },
+                "group": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "operation": {
+          "$ref": "#/components/schemas/OperationCheckResult"
+        },
+        "anonymousAccess": {
+          "type": "boolean",
+          "description": "Grant anonymous users permission to use the operation.",
+          "default": false
+        },
+        "unlicensedAccess": {
+          "type": "boolean",
+          "description": "Grants access to unlicensed users from JIRA Service Desk when used\nwith the 'read space' operation.",
+          "default": false
+        }
+      }
+    },
+    "SpacePrivateCreate": {
+      "type": "object",
+      "description": "This is the request object used when creating a new private space.",
+      "required": [
+        "key",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The key for the new space. Format: See [Space\nkeys](https://confluence.atlassian.com/x/lqNMMQ)."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the new space.",
+          "maxLength": 200
+        },
+        "description": {
+          "$ref": "#/components/schemas/SpaceDescriptionCreate"
+        }
+      }
+    },
+    "SpaceProperty": {
+      "type": "object",
+      "required": [
+        "id",
+        "key",
+        "value",
+        "_expandable"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "version": {
+          "type": "object",
+          "required": [
+            "when",
+            "message",
+            "number",
+            "minorEdit"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "when": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "message": {
+              "type": "string"
+            },
+            "number": {
+              "type": "integer"
+            },
+            "minorEdit": {
+              "type": "boolean"
+            }
+          }
+        },
+        "space": {
+          "$ref": "#/components/schemas/Space"
+        },
+        "_expandable": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "space": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "SpacePropertyArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/SpaceProperty"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "SpacePropertyCreate": {
+      "type": "object",
+      "required": [
+        "key",
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The key of the new property.",
+          "maximum": 255
+        },
+        "value": {
+          "$ref": "#/components/schemas/PropertyValue"
+        }
+      }
+    },
+    "SpacePropertyCreateNoKey": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "$ref": "#/components/schemas/PropertyValue"
+        }
+      }
+    },
+    "SpacePropertyUpdate": {
+      "type": "object",
+      "required": [
+        "value",
+        "version"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "object",
+          "description": "The value of the property.",
+          "additionalProperties": true
+        },
+        "version": {
+          "type": "object",
+          "description": "The version number of the property.",
+          "required": [
+            "number"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "number": {
+              "type": "integer",
+              "format": "int32",
+              "description": "The new version for the updated space property. Set this to the\ncurrent version number incremented by one. To get the current\nversion number, use 'Get space property' and retrieve\n`version.number`."
+            },
+            "minorEdit": {
+              "type": "boolean",
+              "description": "If `minorEdit` is set to 'true', no notification email or activity\nstream will be generated for the change.",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    "SpaceSettings": {
+      "type": "object",
+      "required": [
+        "routeOverrideEnabled",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "routeOverrideEnabled": {
+          "type": "boolean",
+          "description": "Defines whether an override for the space home should be used. This is\nused in conjunction with a space theme provided by an app. For\nexample, if this property is set to true, a theme can display a page\nother than the space homepage when users visit the root URL for a\nspace. This property allows apps to provide content-only theming\nwithout overriding the space home."
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "SpaceSettingsUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "routeOverrideEnabled": {
+          "type": "boolean",
+          "description": "Defines whether an override for the space home should be used. This is\nused in conjunction with a space theme provided by an app. For\nexample, if this property is set to true, a theme can display a page\nother than the space homepage when users visit the root URL for a\nspace. This property allows apps to provide content-only theming\nwithout overriding the space home."
+        }
+      }
+    },
+    "SpaceUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the space.",
+          "maxLength": 200
+        },
+        "description": {
+          "$ref": "#/components/schemas/SpaceDescriptionCreate"
+        },
+        "homepage": {
+          "type": "object",
+          "description": "The page to set as the homepage of the space.",
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "The ID of the page."
+            }
+          }
+        }
+      }
+    },
+    "SuperBatchWebResources": {
+      "type": "object",
+      "properties": {
+        "uris": {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "string"
+            },
+            "css": {
+              "type": "string"
+            },
+            "js": {
+              "type": "string"
+            }
+          }
+        },
+        "tags": {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "string"
+            },
+            "css": {
+              "type": "string"
+            },
+            "data": {
+              "type": "string"
+            },
+            "js": {
+              "type": "string"
+            }
+          }
+        },
+        "metatags": {
+          "type": "string"
+        }
+      }
+    },
+    "SystemInfoEntity": {
+      "type": "object",
+      "required": [
+        "cloudId",
+        "commitHash"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cloudId": {
+          "type": "string"
+        },
+        "commitHash": {
+          "type": "string"
+        }
+      }
+    },
+    "Theme": {
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/ThemeNoLinks"
+        },
+        {
+          "type": "object",
+          "required": [
+            "_links"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          }
+        }
+      ]
+    },
+    "ThemeArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ThemeNoLinks"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "ThemeNoLinks": {
+      "type": "object",
+      "description": "Theme object without links. Used in ThemeArray.",
+      "required": [
+        "themeKey",
+        "name",
+        "description",
+        "icon"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "themeKey": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "icon": {
+          "$ref": "#/components/schemas/Icon"
+        }
+      }
+    },
+    "ThemeUpdate": {
+      "type": "object",
+      "required": [
+        "themeKey"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "themeKey": {
+          "type": "string",
+          "description": "The key of the theme to be set as the space theme."
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "required": [
+        "type",
+        "username",
+        "userKey",
+        "accountId",
+        "profilePicture",
+        "displayName",
+        "_expandable",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "known",
+            "unknown",
+            "anonymous",
+            "user"
+          ]
+        },
+        "username": {
+          "type": "string",
+          "description": "This property has been deprecated in favor of `accountId`, due to privacy changes. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details.\n\nThe username of the user. For example, _admin_."
+        },
+        "userKey": {
+          "type": "string",
+          "description": "This property has been deprecated in favor of `accountId`, due to privacy changes. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details.\n\nThe user key of the user."
+        },
+        "accountId": {
+          "type": "string",
+          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products.\nFor example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`.",
+          "email": {
+            "type": "string",
+            "description": "The email address of the user. Depending on the user’s privacy setting, this may be returned as null."
+          }
+        },
+        "profilePicture": {
+          "$ref": "#/components/schemas/Icon"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The display name of the user. Depending on the user’s privacy setting, this may be returned as null."
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/OperationCheckResult"
+          }
+        },
+        "details": {
+          "$ref": "#/components/schemas/UserDetails"
+        },
+        "personalSpace": {
+          "$ref": "#/components/schemas/Space"
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operations": {
+              "type": "string"
+            },
+            "details": {
+              "type": "string"
+            },
+            "personalSpace": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "UserAnonymous": {
+      "type": "object",
+      "required": [
+        "type",
+        "profilePicture",
+        "displayName",
+        "_expandable",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "profilePicture": {
+          "$ref": "#/components/schemas/Icon"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/OperationCheckResult"
+          }
+        },
+        "_expandable": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "operations": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "UserArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size"
+      ],
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "UserArrayWithLinks": {
+      "description": "Same as UserArray but with `_links` property.",
+      "allOf": [
+        {
+          "$ref": "#/components/schemas/UserArray"
+        },
+        {
+          "type": "object",
+          "required": [
+            "_links"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "_links": {
+              "$ref": "#/components/schemas/GenericLinks"
+            }
+          }
+        }
+      ]
+    },
+    "UserDetails": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "business": {
+          "type": "object",
+          "required": [
+            "position",
+            "department",
+            "location"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "position": {
+              "type": "string",
+              "description": "This property has been deprecated due to privacy changes. There is no replacement. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details."
+            },
+            "department": {
+              "type": "string",
+              "description": "This property has been deprecated due to privacy changes. There is no replacement. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details."
+            },
+            "location": {
+              "type": "string",
+              "description": "This property has been deprecated due to privacy changes. There is no replacement. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details."
+            }
+          }
+        },
+        "personal": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "phone": {
+              "type": "string",
+              "description": "This property has been deprecated due to privacy changes. There is no replacement. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details."
+            },
+            "im": {
+              "type": "string",
+              "description": "This property has been deprecated due to privacy changes. There is no replacement. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details."
+            },
+            "website": {
+              "type": "string",
+              "description": "This property has been deprecated due to privacy changes. There is no replacement. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details."
+            },
+            "email": {
+              "type": "string",
+              "description": "This property has been deprecated due to privacy changes. There is no replacement. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details."
+            }
+          }
+        }
+      }
+    },
+    "UsersUserKeys": {
+      "type": "object",
+      "required": [
+        "users",
+        "userKeys"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "userKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "UserWatch": {
+      "type": "object",
+      "required": [
+        "watching"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "watching": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Version": {
+      "type": "object",
+      "required": [
+        "by",
+        "when",
+        "friendlyWhen",
+        "message",
+        "number",
+        "minorEdit",
+        "_expandable",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "by": {
+          "$ref": "#/components/schemas/User"
+        },
+        "when": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "friendlyWhen": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "minorEdit": {
+          "type": "boolean"
+        },
+        "content": {
+          "$ref": "#/components/schemas/Content"
+        },
+        "collaborators": {
+          "$ref": "#/components/schemas/UsersUserKeys"
+        },
+        "_expandable": {
+          "type": "object",
+          "required": [
+            "content",
+            "collaborators"
+          ],
+          "properties": {
+            "content": {
+              "type": "string"
+            },
+            "collaborators": {
+              "type": "string"
+            }
+          }
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "VersionArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "VersionRestore": {
+      "type": "object",
+      "required": [
+        "operationKey",
+        "params"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "operationKey": {
+          "type": "string",
+          "description": "Set to 'RESTORE'.",
+          "enum": [
+            "RESTORE"
+          ]
+        },
+        "params": {
+          "type": "object",
+          "required": [
+            "versionNumber",
+            "message"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "versionNumber": {
+              "type": "integer",
+              "description": "The version number to be restored.",
+              "format": "int32"
+            },
+            "message": {
+              "type": "string",
+              "description": "Description for the version."
+            }
+          }
+        }
+      }
+    },
+    "Watch": {
+      "type": "object",
+      "required": [
+        "type",
+        "watcher",
+        "contentId"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "watcher": {
+          "$ref": "#/components/schemas/WatchUser"
+        },
+        "contentId": {
+          "type": "string"
+        }
+      }
+    },
+    "WatchArray": {
+      "type": "object",
+      "required": [
+        "results",
+        "start",
+        "limit",
+        "size",
+        "_links"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Watch"
+          }
+        },
+        "start": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "_links": {
+          "$ref": "#/components/schemas/GenericLinks"
+        }
+      }
+    },
+    "WatchUser": {
+      "type": "object",
+      "description": "This essentially the same as the `User` object, but no `_links` property and \nno `_expandable` property (therefore, different required fields).",
+      "required": [
+        "type",
+        "profilePicture",
+        "username",
+        "displayName",
+        "userKey",
+        "operations",
+        "accountId",
+        "details"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string",
+          "description": "This property has been deprecated in favor of `accountId`. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details.\n\nThe username of the user. For example, _admin_."
+        },
+        "userKey": {
+          "type": "string",
+          "description": "This property has been deprecated in favor of `accountId`. See the\n[migration guide](https://developer.atlassian.com/cloud/confluence/deprecation-notice-user-privacy-api-migration-guide/)\nfor details.\n\nThe user key of the user."
+        },
+        "accountId": {
+          "type": "string",
+          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products.\nFor example, `384093:32b4d9w0-f6a5-3535-11a3-9c8c88d10192`."
+        },
+        "profilePicture": {
+          "$ref": "#/components/schemas/Icon"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/OperationCheckResult"
+          }
+        },
+        "details": {
+          "$ref": "#/components/schemas/UserDetails"
+        }
+      }
+    },
+    "WebResourceDependencies": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "contexts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "uris": {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "string"
+            },
+            "css": {
+              "type": "string"
+            },
+            "js": {
+              "type": "string"
+            }
+          }
+        },
+        "tags": {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "string"
+            },
+            "css": {
+              "type": "string"
+            },
+            "data": {
+              "type": "string"
+            },
+            "js": {
+              "type": "string"
+            }
+          }
+        },
+        "superbatch": {
+          "$ref": "#/components/schemas/SuperBatchWebResources"
+        }
+      }
+    }
+  },
+  "securitySchemes": {
+    "atlassianCloudBasicAuth": {
+      "scheme": "basic",
+      "type": "http",
+      "description": "You require basic auth to access this API."
+    }
+  }
+}

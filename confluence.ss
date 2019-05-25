@@ -47,6 +47,7 @@ namespace: confluence
    ("convert" (hash (description: "Convert Confluence Markdown to Confluence html") (usage: "convert <markdown string>") (count: 1)))
    ("get" (hash (description: "Get content of doc") (usage: "get <id of doc>") (count: 1)))
    ("search" (hash (description: "Search for docs matching string") (usage: "search <query string>") (count: 1)))
+   ("longtask" (hash (description: "List longtasks") (usage: "longask <seconds>") (count: 1)))
    ))
 
 (def (main . args)
@@ -245,6 +246,15 @@ namespace: confluence
   (format "Basic ~a"
 	  (base64-encode
 	   (string->utf8 (format "~a:~a" user password)))))
+
+
+
+(def (longtask last)
+  (let-hash (load-config)
+    (let* ((results (do-get-generic (format "~a/longtask" .url) default-headers)))
+	   ;;(myjson (with-input-from-string results read-json)))
+      (displayln (hash->list results)))))
+
 
 (def (search query)
   (let-hash (load-config)
