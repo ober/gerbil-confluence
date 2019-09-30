@@ -13,6 +13,7 @@ namespace: confluence
   :std/format
   :std/generic
   :std/generic/dispatch
+  :std/iter
   :std/misc/channel
   :std/misc/ports
   :std/net/address
@@ -179,10 +180,8 @@ namespace: confluence
 (def (usage)
   (displayln "Usage: confluence <verb>")
   (displayln "Verbs:")
-  (for-each
-    (lambda (k)
-      (displayln (format "~a: ~a" k (hash-get (hash-get interactives k) description:))))
-    (sort! (hash-keys interactives) string<?))
+  (for (k (sort! (hash-keys interactives) string<?))
+       (displayln (format "~a: ~a" k (hash-get (hash-get interactives k) description:))))
   (exit 2))
 
 (def (nth n l)
@@ -247,14 +246,11 @@ namespace: confluence
 	  (base64-encode
 	   (string->utf8 (format "~a:~a" user password)))))
 
-
-
 (def (longtask last)
   (let-hash (load-config)
     (let* ((results (do-get-generic (format "~a/longtask" .url) default-headers)))
 	   ;;(myjson (with-input-from-string results read-json)))
       (displayln (hash->list results)))))
-
 
 (def (search query)
   (let-hash (load-config)
@@ -263,22 +259,20 @@ namespace: confluence
 		  (format "~a/rest/api/content/search?cql=~a" .url query)
 		  (format "~a/rest/api/content/search?cql=text~~~a" .url query)))
 	   (results (do-get-generic url (default-headers .basic-auth)))
-	   (myjson (with-input-from-string results read-json)))
+	   (myjson (from-json results)))
       (let-hash myjson
 	(displayln "| Title | id | Type |url|tinyurl| ")
 	(displayln "|-|")
-	(for-each
-	  (lambda (p)
-	    (let-hash p
-	      (let-hash ._links
-		(displayln
-			   "|" ..title
-			   "|" ..id
-			   "|" ..type
-			   "|" ....url .?webui
-			   "|" ....url .?tinyui
-			   "|"))))
-	  .results)))))
+	(for (p .results)
+	     (let-hash p
+	       (let-hash ._links
+		 (displayln
+		  "|" ..title
+		  "|" ..id
+		  "|" ..type
+		  "|" ....url .?webui
+		  "|" ....url .?tinyui
+		  "|"))))))))
 
 (def (get id)
   (let-hash (load-config)
@@ -337,7 +331,6 @@ namespace: confluence
 (def (make-web-safe string)
   (let* ((output (pregexp-replace* " " string "%20")))
     output))
-
 
 (def (config)
   (let-hash (load-config)
