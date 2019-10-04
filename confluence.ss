@@ -305,11 +305,17 @@ namespace: confluence
    ])
 
 (def (load-config)
-  (let ((config (hash)))
+  (let ((config (hash))
+        (config-data (yaml-load config-file)))
+    (unless (and (list? config-data)
+                 (length>n? config-data 0)
+                 (table? (car config-data)))
+      (displayln (format "Could not parse your config ~a" config-file))
+      (exit 2))
     (hash-for-each
      (lambda (k v)
        (hash-put! config (string->symbol k) v))
-     (car (yaml-load config-file)))
+     (car config-data))
     (let-hash config
       (hash-put! config 'style (or .?style "org-mode"))
       (when .?secrets
