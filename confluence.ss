@@ -14,6 +14,7 @@ namespace: confluence
   :std/generic
   :std/generic/dispatch
   :std/iter
+  :std/misc/list
   :std/misc/channel
   :std/misc/ports
   :std/net/address
