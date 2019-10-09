@@ -26,8 +26,7 @@ namespace: confluence
   :std/text/base64
   :std/text/json
   :std/text/utf8
-  :std/text/yaml
-  )
+  :std/text/yaml)
 
 (def config-file "~/.confluence.yaml")
 
