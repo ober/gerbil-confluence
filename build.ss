@@ -5,4 +5,4 @@
 
 (defbuild-script
   '("confluence/client"
-    (exe: "confluence/cfl")))
+    (exe: "confluence/confluence")))
