@@ -5,7 +5,6 @@
 (import
   :gerbil/gambit
   :gerbil/gambit/ports
-  :scheme/base
   :std/crypto/cipher
   :std/crypto/etc
   :std/crypto/libcrypto
