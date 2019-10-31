@@ -29,7 +29,7 @@
 (export #t)
 
 (def config-file "~/.confluence.yaml")
-
+(declare (not optimize-dead-definitions))
 (import (rename-in :gerbil/gambit/os (current-time builtin-current-time)))
 
 (def program-name "confluence")
