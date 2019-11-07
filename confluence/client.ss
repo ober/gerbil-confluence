@@ -143,7 +143,7 @@
 (def (config)
   (let-hash (load-config)
     (displayln "What is your password?: ")
-    (let* ((password (read-password ##console-port)))
+    (let* ((password (read-password ##console-port))
 	   (cipher (make-aes-256-ctr-cipher))
 	   (iv (random-bytes (cipher-iv-length cipher)))
 	   (key (random-bytes (cipher-key-length cipher)))
@@ -158,7 +158,7 @@
 				     (key key-store))))))
 
       (displayln "Add the following lines to your " config-file)
-      (displayln "secrets: " secrets)))
+      (displayln "secrets: " secrets))))
 
 (def (get-password-from-config key iv password)
   (bytes->string
