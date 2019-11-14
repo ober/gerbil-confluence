@@ -160,8 +160,8 @@
   "Return json object of the document with id"
   (let-hash (load-config)
     (let* ((url (format "~a/rest/api/content/~a" .url id))
-	   (results (do-get-generic url (default-headers .basic-auth)))
-      results))))
+	   (results (do-get-generic url (default-headers .basic-auth))))
+      results)))
 
 (def (default-headers basic)
   [
