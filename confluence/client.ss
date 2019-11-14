@@ -64,10 +64,11 @@
            (text (request-text results)))
       (displayln "status is " status " text is " text))))
 
-(def (create title content-file)
+(def (create content-file)
   "Create a new document in Confluence containing the content of content-file"
   (let-hash (ensure-config)
     (let* ((url (format "~a/rest/api/content?expand=body" .url))
+           (title (pregexp-replace* "-" (car (pregexp-split ".org" (last (pregexp-split "/" content-file)))) " "))
            (data (hash
                   ("type" "page")
                   ("title" title)
