@@ -28,7 +28,7 @@
 
 (export #t)
 (declare (not optimize-dead-definitions))
-(def version "0.02")
+(def version "0.03")
 
 (def config-file "~/.confluence.yaml")
 
@@ -106,7 +106,7 @@
       ;;(myjson (with-input-from-string results read-json)))
       (displayln (hash->list results)))))
 
-(def (confluence-delete id)
+(def (remove-doc id)
   "Delete Confluence document with the id"
   (let-hash (load-config)
     (let* ((url (format "~a/rest/api/content?id=~a" .url id))
