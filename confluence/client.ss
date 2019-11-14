@@ -51,10 +51,11 @@
       (let* ((url (format "~a/rest/api/content/~a" .url id))
              (current (from-json (get id)))
              (current-title (let-hash current .title))
+             (new-title (pregexp-replace* "-" (car (pregexp-split ".cml" (last (pregexp-split "/" content-file)))) " "))
              (current-number (let-hash current (let-hash .version .number)))
              (data (hash
                     ("type" "page")
-                    ("title" current-title)
+                    ("title" new-title)
                     ("space" (hash
                               ("key" .?space)))
                     ("body" (hash
