@@ -157,6 +157,10 @@
              (set! outs (cons (filter-row-hash row headers) outs))))
       (style-output outs))))
 
+(def (info id)
+  "Interactive version"
+  (displayln (get id)))
+
 (def (get id)
   "Return json object of the document with id"
   (let-hash (load-config)
