@@ -68,7 +68,7 @@
   "Create a new document in Confluence containing the content of content-file"
   (let-hash (ensure-config)
     (let* ((url (format "~a/rest/api/content?expand=body" .url))
-           (title (pregexp-replace* "-" (car (pregexp-split ".org" (last (pregexp-split "/" content-file)))) " "))
+           (title (pregexp-replace* "-" (car (pregexp-split ".cml" (last (pregexp-split "/" content-file)))) " "))
            (data (hash
                   ("type" "page")
                   ("title" title)
