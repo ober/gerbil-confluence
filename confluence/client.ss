@@ -45,24 +45,27 @@
           (exit 2))))
     config))
 
-(def (update id version title body)
+(def (update id content-file)
   "Update the Body of a document with the contents of content-file on document of id"
   (let-hash (ensure-config)
-    (let* ((url (format "~a/rest/api/content/~a" .url id))
-           (data (hash
-                  ("type" "page")
-                  ("title" title)
-                  ("space" (hash
-                            ("key" .?space)))
-                  ("body" (hash
-                           ("storage" (hash
-                                       ("value" body)
-                                       ("representation" "storage")))))
-                  ("version" (hash ("number" version)))))
-           (results (do-put url (default-headers .basic-auth) (json-object->string data)))
-           (status (request-status results))
-           (text (request-text results)))
-      (displayln "status is " status " text is " text))))
+      (let* ((url (format "~a/rest/api/content/~a" .url id))
+             (current (from-json (get id)))
+             (current-title (let-hash current .title))
+             (current-number (let-hash current (let-hash .version .number)))
+             (data (hash
+                    ("type" "page")
+                    ("title" current-title)
+                    ("space" (hash
+                              ("key" .?space)))
+                    ("body" (hash
+                             ("storage" (hash
+                                         ("value" (read-file-string content-file))
+                                         ("representation" "storage")))))
+                    ("version" (hash ("number" (1+ current-number))))))
+             (results (do-put url (default-headers .basic-auth) (json-object->string data)))
+             (status (request-status results))
+             (text (request-text results)))
+        (displayln "status is " status " text is " text))))
 
 (def (create content-file)
   "Create a new document in Confluence containing the content of content-file"
