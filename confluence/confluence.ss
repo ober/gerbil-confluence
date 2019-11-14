@@ -47,7 +47,7 @@
    ("body" (hash (description: "Get body of doc") (usage: "body <id of doc>") (count: 1)))
    ("config" (hash (description: "Setup your user and password in the config encrypted") (usage: "config") (count: 0)))
    ("convert" (hash (description: "Convert Confluence Markdown to Confluence html") (usage: "convert <markdown string>") (count: 1)))
-   ("get" (hash (description: "Get content of doc") (usage: "get <id of doc>") (count: 1)))
+   ("info" (hash (description: "Get information of doc") (usage: "info <id of doc>") (count: 1)))
    ("search" (hash (description: "Search for docs matching string") (usage: "search <query string>") (count: 1)))
    ("longtask" (hash (description: "List longtasks") (usage: "longask <seconds>") (count: 1)))
    ))
