@@ -43,6 +43,7 @@
 (def interactives
   (hash
    ("create" (hash (description: "Publish a new document")(usage: "create <file of content>") (count: 1)))
+   ("update" (hash (description: "Publish an update to an existing document")(usage: "update <id> <file of content>") (count: 2)))
    ("body" (hash (description: "Get body of doc") (usage: "body <id of doc>") (count: 1)))
    ("config" (hash (description: "Setup your user and password in the config encrypted") (usage: "config") (count: 0)))
    ("convert" (hash (description: "Convert Confluence Markdown to Confluence html") (usage: "convert <markdown string>") (count: 1)))

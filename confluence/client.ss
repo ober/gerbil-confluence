@@ -26,8 +26,8 @@
   :ober/oberlib
   :std/text/yaml)
 
-(export #t)
-(declare (not optimize-dead-definitions))
+;;(export #t)
+;;(declare (not optimize-dead-definitions))
 
 (def config-file "~/.confluence.yaml")
 
@@ -35,13 +35,38 @@
 
 (def program-name "confluence")
 
+(def (ensure-config)
+  "Ensure critical items are present in the config-file"
+  (let ((config (load-config)))
+    (let-hash config
+      (unless .?space
+        (begin
+          (displayln "You must specify the default space=mygroup in your " .config-file)
+          (exit 2))))
+    config))
+
+(def (update id version title body)
+  "Update the Body of a document with the contents of content-file on document of id"
+  (let-hash (ensure-config)
+    (let* ((url (format "~a/rest/api/content/~a" .url id))
+           (data (hash
+                  ("type" "page")
+                  ("title" title)
+                  ("space" (hash
+                            ("key" .?space)))
+                  ("body" (hash
+                           ("storage" (hash
+                                       ("value" body)
+                                       ("representation" "storage")))))
+                  ("version" (hash ("number" version)))))
+           (results (do-put url (default-headers .basic-auth) (json-object->string data)))
+           (status (request-status results))
+           (text (request-text results)))
+      (displayln "status is " status " text is " text))))
+
 (def (create title content-file)
   "Create a new document in Confluence containing the content of content-file"
-  (let-hash (load-config)
-    (unless .?space
-      (begin
-        (displayln "You must specify the default space=mygroup in your " .config-file)
-        (exit 2)))
+  (let-hash (ensure-config)
     (let* ((url (format "~a/rest/api/content?expand=body" .url))
            (data (hash
                   ("type" "page")
@@ -55,17 +80,17 @@
 	   (results (do-post-generic url (default-headers .basic-auth) (json-object->string data))))
       (displayln results))))
 
-(def (convert markdown)
+(def (convert markdown-file)
   (let-hash (load-config)
     (let* ((url (format "~a/rest/api/contentbody/convert/storage" .url))
 	   (data (hash
-		  ("value" markdown)
+		  ("value" (read-file-string markdown-file))
 		  ("representation" "wiki")))
 	   (results (do-post-generic
 		     url
 		     (default-headers .basic-auth)
 		     (json-object->string data)))
-	   (myjson (with-input-from-string results read-json)))
+	   (myjson (from-json results)))
       (let-hash myjson
 	(displayln .value)))))
 
