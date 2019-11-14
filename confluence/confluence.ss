@@ -75,6 +75,7 @@
     (exit 2)))
 
 (def (usage)
+  (displayln (format "Confluence: version ~a" version))
   (displayln "Usage: confluence <verb>")
   (displayln "Verbs:")
   (for (k (sort! (hash-keys interactives) string<?))
