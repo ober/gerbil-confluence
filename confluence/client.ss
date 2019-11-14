@@ -26,8 +26,8 @@
   :ober/oberlib
   :std/text/yaml)
 
-;;(export #t)
-;;(declare (not optimize-dead-definitions))
+(export #t)
+(declare (not optimize-dead-definitions))
 
 (def config-file "~/.confluence.yaml")
 
