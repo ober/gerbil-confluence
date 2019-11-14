@@ -157,27 +157,11 @@
       (style-output outs))))
 
 (def (get id)
+  "Return json object of the document with id"
   (let-hash (load-config)
     (let* ((url (format "~a/rest/api/content/~a" .url id))
 	   (results (do-get-generic url (default-headers .basic-auth)))
-	   (myjson (with-input-from-string results read-json)))
-      (displayln results))))
-;; (let-hash myjson
-;;   (displayln "| Title | id | Type |url|tinyurl| ")
-;;   (displayln "|-|")
-;;   (for-each
-;; 	(lambda (p)
-;; 	  (let-hash p
-;; 	    (let-hash ._links
-;; 	      (displayln "|"
-;; 			 ..title "|"
-;; 			 ..id "|"
-;; 			 ..type "|"
-;; 			 server .?webui "|"
-;; 			 server .?tinyui "|"
-;; 			 "|"))))
-;; 	.results))))
-
+      results))))
 
 (def (default-headers basic)
   [
