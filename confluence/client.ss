@@ -133,8 +133,10 @@
                              (length>n? sf 1))
                       sf
                       df)))
+
       (set! outs (cons headers outs))
       (for (doc docs)
+           (dp (hash->list doc))
            (let ((row (hash)))
              (let-hash doc
                (when (and .?_expandable
@@ -145,16 +147,16 @@
                (hash-put! row "id" .?id)
                (hash-put! row "title" .?title)
                (hash-put! row "status" .?status)
-               (hash-put! row "type" .type))
-             (when (and .?_links
-                        (table? ._links))
-               (let-hash ._links
-                 (hash-put! row "tinyurl" (if .?tinyui
-                                            (format "~a/~a" ..url .tinyui)
-                                            "N/A"))
-                 (hash-put! row "url" (if .?webui
-                                        (format "~a/~a" ..url .webui)
-                                        "N/A"))))
+               (hash-put! row "type" .?type)
+               (when (and .?_links
+                          (table? ._links))
+                 (let-hash ._links
+                   (hash-put! row "tinyurl" (if .?tinyui
+                                              (format "~a/~a" ...?url .tinyui)
+                                              "N/A"))
+                   (hash-put! row "url" (if .?webui
+                                          (format "~a/~a" ...?url .webui)
+                                          "N/A")))))
              (set! outs (cons (filter-row-hash row headers) outs))))
       (style-output outs))))
 
