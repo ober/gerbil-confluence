@@ -28,7 +28,7 @@
 
 (export #t)
 (declare (not optimize-dead-definitions))
-(def version "0.04")
+(def version "0.05")
 
 (def config-file "~/.confluence.yaml")
 
@@ -152,10 +152,10 @@
                           (table? ._links))
                  (let-hash ._links
                    (hash-put! row "tinyurl" (if .?tinyui
-                                              (format "~a/~a" ...?url .tinyui)
+                                              (format "~a~a" ...?url .tinyui)
                                               "N/A"))
                    (hash-put! row "url" (if .?webui
-                                          (format "~a/~a" ...?url .webui)
+                                          (format "~a~a" ...?url .webui)
                                           "N/A")))))
              (set! outs (cons (filter-row-hash row headers) outs))))
       (style-output outs))))
