@@ -99,9 +99,7 @@
 	   (myjson (from-json results))
            (cml (format "~a.cml" (pregexp-replace ".cmd" markdown-file ""))))
       (let-hash myjson
-        (with-output-to-file cml
-          (lambda ()
-            (write .value)))))))
+        (with-output-to-file cml (cut displayln .value))))))
 
 (def (longtask last)
   (let-hash (load-config)
