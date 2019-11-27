@@ -121,7 +121,7 @@
     (let* ((outs [])
            (df [ "id" "type" "status" "title" "space" "expandables" "tinyurl" ])
            (sf .?search-fields)
-           (query (make-web-safe query))
+           (query (uri-encode query))
 	   (url (if (string-contains query "~")
                   (format "~a/rest/api/content/search?cql=~a" .url query)
                   (format "~a/rest/api/content/search?cql=text~~~a" .url query)))
@@ -207,10 +207,6 @@
 	(let-hash .body
 	  (let-hash .view
 	    (displayln .value)))))))
-
-(def (make-web-safe string)
-  (let* ((output (pregexp-replace* " " string "%20")))
-    output))
 
 (def (config)
   (let-hash (load-config)
