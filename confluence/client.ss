@@ -52,7 +52,7 @@
       (let* ((url (format "~a/rest/api/content/~a" .url id))
              (current (from-json (get id)))
              (current-title (let-hash current .title))
-             (new-title (pregexp-replace* "-" (car (pregexp-split ".cml" (last (pregexp-split "/" content-file)))) " "))
+             (new-title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
              (current-number (let-hash current (let-hash .version .number)))
              (data (hash
                     ("type" "page")
@@ -70,10 +70,11 @@
         (displayln "status is " status " text is " text))))
 
 (def (create content-file)
-  "Create a new document in Confluence containing the content of content-file"
+  "Create a new document in Confluence containing the content of content-file
+   Use naming convention with hypens -> Spaces, and .cml ending for file ending"
   (let-hash (ensure-config)
     (let* ((url (format "~a/rest/api/content?expand=body" .url))
-           (title (pregexp-replace* "-" (car (pregexp-split ".cml" (last (pregexp-split "/" content-file)))) " "))
+           (title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
            (data (hash
                   ("type" "page")
                   ("title" title)
