@@ -96,9 +96,12 @@
 		     url
 		     (default-headers .basic-auth)
 		     (json-object->string data)))
-	   (myjson (from-json results)))
+	   (myjson (from-json results))
+           (cml (format "~a.cml" (pregexp-replace ".cmd" markdown-file ""))))
       (let-hash myjson
-	(displayln .value)))))
+        (with-output-to-file cml
+          (lambda ()
+            (write .value)))))))
 
 (def (longtask last)
   (let-hash (load-config)
@@ -113,7 +116,6 @@
            (results (do-delete url (default-headers .basic-auth))))
       ;;           (myjson (from-json results)))
       (displayln results))))
-
 
 (def (search query)
   "Search confluence for query"
