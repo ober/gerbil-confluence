@@ -121,7 +121,7 @@
     (let* ((outs [])
            (df [ "id" "type" "status" "title" "space" "expandables" "tinyurl" ])
            (sf .?search-fields)
-           (query (uri-encode query))
+           (query (web-encode query))
 	   (url (if (string-contains query "~")
                   (format "~a/rest/api/content/search?cql=~a" .url query)
                   (format "~a/rest/api/content/search?cql=text~~~a" .url query)))
