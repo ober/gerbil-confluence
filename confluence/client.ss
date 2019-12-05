@@ -116,13 +116,17 @@
       ;;           (myjson (from-json results)))
       (displayln results))))
 
-(def (search query)
+(def (make-web-safe string)
+  (let* ((output (pregexp-replace* " " string "%20")))
+    output))
+
+(def (search q)
   "Search confluence for query"
   (let-hash (load-config)
     (let* ((outs [])
            (df [ "id" "type" "status" "title" "space" "expandables" "tinyurl" ])
            (sf .?search-fields)
-           (query (web-encode query))
+           (query (make-web-safe q))
 	   (url (if (string-contains query "~")
                   (format "~a/rest/api/content/search?cql=~a" .url query)
                   (format "~a/rest/api/content/search?cql=text~~~a" .url query)))
@@ -134,7 +138,6 @@
                              (length>n? sf 1))
                       sf
                       df)))
-
       (set! outs (cons headers outs))
       (for (doc docs)
            (dp (hash->list doc))
