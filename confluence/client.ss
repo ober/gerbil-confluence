@@ -28,7 +28,7 @@
 
 (export #t)
 (declare (not optimize-dead-definitions))
-(def version "0.06")
+(def version "0.07")
 
 (def config-file "~/.confluence.yaml")
 
@@ -99,6 +99,46 @@
 		     (json-object->string data)))
 	   (myjson (from-json results))
            (cml (format "~a.cml" (pregexp-replace ".cmd" markdown-file ""))))
+      (let-hash myjson
+        (with-output-to-file cml (cut displayln .value))))))
+
+(def (md2c markdown-file)
+  (let ((cml (format "~a.cmd" (pregexp-replace ".md" markdown-file ""))))
+    (markdown-to-confluence markdown-file cml)
+    (displayln "Output file " cml " created.")))
+
+;; (def (md2c markdown-file)
+;;   (let* ((data (read-file-string markdown-file))
+;;          (rules [
+;;                  [ "^# ([a-zA-Z0-9]+)$" "h1. \\1" ]
+;;                  [ "^## ([a-zA-Z0-9]+)$" "h2. \\1" ]
+;;                  [ "^### ([a-zA-Z0-9]+)$" "h3. \\1" ]
+;;                  [ "^#### ([a-zA-Z0-9]+)$" "h4. \\1" ]
+;;                  [ "^##### ([a-zA-Z0-9]+)$" "h5. \\1" ]
+;;                  ])
+;;          (results ""))
+;;     (with-output-to-file cml
+;;       (lambda ()
+;;         (set! results data)
+;;         (for (rule rules)
+;;           (let ((pattern (nth 0 rule))
+;;                 (substitution (nth 1 rule)))
+;;             (displayln "pattern is " pattern " substitution is " substitution)
+;;             (set! results (pregexp-replace* pattern data substitution))))
+;;         (displayln data)))))
+
+(def (converter in-file in-format out-format)
+  (let-hash (load-config)
+    (let* ((url (format "~a/rest/api/contentbody/convert/~a" .url out-format))
+	   (data (hash
+		  ("value" (read-file-string in-file))
+		  ("representation" in-format)))
+	   (results (do-post-generic
+		     url
+		     (default-headers .basic-auth)
+		     (json-object->string data)))
+	   (myjson (from-json results))
+           (cml (format "~a.cml" (pregexp-replace ".cmd" in-file ""))))
       (let-hash myjson
         (with-output-to-file cml (cut displayln .value))))))
 

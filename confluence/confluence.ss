@@ -44,7 +44,9 @@
   (hash
    ("body" (hash (description: "Get body of doc") (usage: "body <id of doc>") (count: 1)))
    ("config" (hash (description: "Setup your user and password in the config encrypted") (usage: "config") (count: 0)))
-   ("convert" (hash (description: "Convert Confluence Markdown to Confluence html") (usage: "convert <markdown string>") (count: 1)))
+   ("convert" (hash (description: "Convert Confluence Markup to Confluence XML™") (usage: "convert <markup .cml file>") (count: 1)))
+   ("md2c" (hash (description: "Convert file from markdown to Confluence Markup") (usage: "md2c <markdown .md file>") (count: 1)))
+   ("converter" (hash (description: "Convert Between different formats") (usage: "converter <input file> <input format: wiki, storage, view> <output format: storage, view, editor, exported_view, styled_view>") (count: 3)))
    ("create" (hash (description: "Publish a new document")(usage: "create <file of content>") (count: 1)))
    ("info" (hash (description: "Get information of doc") (usage: "info <id of doc>") (count: 1)))
    ("longtask" (hash (description: "List longtasks") (usage: "longask <seconds>") (count: 1)))
