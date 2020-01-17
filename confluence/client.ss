@@ -343,8 +343,10 @@
         (let loop ((p (read-char port)))
           (cond
            ((eq? p #\#)
-            (let (h (hn p port))
-              (map (cut write-char <> output) h))
+            (if (= (input-port-char-position port) 1)
+              (let (h (hn p port))
+                (map (cut write-char <> output) h))
+              (write-char p output))
             (loop (read-char port)))
            ((eq? p #\>)
             (when (= (input-port-char-position port) 1)
