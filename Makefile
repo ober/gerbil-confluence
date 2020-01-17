@@ -5,7 +5,9 @@ docker:
 push:
 	docker push jaimef/confluence
 
-tests: test-search
+tests: test
+
+test: test-search test-md2c
 
 test-body:
 
