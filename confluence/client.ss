@@ -287,6 +287,8 @@
   (def from (call-with-input-file in read-all-as-lines))
   (def to (open-output-file [path: out append: #f]))
 
+  (write-string (string-append "{toc}" (string #\newline)) to)
+
   (def (write-line in out)
     (let loop ((c (read-char in)))
       (unless (eq? c #!eof)
