@@ -27,12 +27,13 @@ test-md2c: $(eval tempfile := $(shell mktemp))
 test-md2c:
 	@echo -n "test-md2c: "
 	@echo "### one\n> blockquote\n" > $(tempfile).md
-	@echo "h3. one\n{quote} blockquote\n{quote}" > $(tempfile).chk
+	@echo "{toc}\nh3. one\n{quote} blockquote\n{quote}" > $(tempfile).chk
 	@confluence md2c $(tempfile).md 2>&1 > /dev/null
 	@if [ "$$(diff -q $(tempfile).cmd $(tempfile).chk; echo $$?)" = 0 ]; then\
 		echo PASS;\
 	else\
 		echo FAIL;\
+		diff -ru $(tempfile).chk $(tempfile).cmd; \
 	fi
 
 test-remove-doc:
