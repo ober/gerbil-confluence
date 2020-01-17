@@ -282,3 +282,93 @@
 
 
 ;; old utils
+
+(def (markdown-to-confluence in out)
+  (def from (call-with-input-file in read-all-as-lines))
+  (def to (open-output-file [path: out append: #f]))
+
+  (def (write-line in out)
+    (let loop ((c (read-char in)))
+      (unless (eq? c #!eof)
+        (write-char c out)
+        (loop (read-char in)))))
+
+  (def (read-until c port)
+    (let loop ((c* (read-char port)) (cl []))
+      (cond
+       ((eq? c c*)
+        (reverse cl))
+       ((eq? c #!eof)
+        (reverse cl))
+       (else
+        (loop (read-char port) (cons c* cl))))))
+
+  (def (read-n n c port)
+    (let loop ((c* (read-char port)) (n* 0) (cl []))
+      (if (< n* n)
+        (if (eq? c c*)
+          (loop (read-char port) (1+ n*) (cons c* cl))
+          #f)
+        (reverse cl))))
+
+  ;; markdown functions
+
+  ;; '### ' -> 'h3. '
+  (def (hn c port)
+    (let loop ((c c) (n 0))
+      (cond
+       ((eq? c #\#)
+        (loop (read-char port) (1+ n)))
+       ((eq? c #\space)
+        (string->list (string-append "h" (number->string n) ". ")))
+       (else
+        '()))))
+
+  ;; '> ' -> ' ' && inside code-block
+  (def (quote-block c port)
+    (let loop ((c c))
+      (cond
+       ((eq? c #\>)
+        (loop (read-char port)))
+       ((eq? c #\space)
+        (string->list " "))
+       (else
+        '()))))
+
+  ;; for each line
+  (let ((in-quote-block? #f))
+    (for (i from)
+      (let* ((port (open-input-string i))
+             (output (open-output-string)))
+        (let loop ((p (read-char port)))
+          (cond
+           ((eq? p #\#)
+            (let (h (hn p port))
+              (map (cut write-char <> output) h))
+            (loop (read-char port)))
+           ((eq? p #\>)
+            (when (= (input-port-char-position port) 1)
+              (unless in-quote-block?
+                (map (cut write-char <> output) (string->list "{quote}"))
+                (set! in-quote-block? #t)))
+            (let ((l (quote-block p port)))
+              (map (cut write-char <> output) l))
+            (loop (read-char port)))
+           ((eq? p #!eof)
+            (let ((pos (input-port-char-position port)))
+              (when (and
+                      in-quote-block?
+                      (= 0 pos))
+                (set! in-quote-block? #f)
+                (map (cut write-char <> output) (string->list "{quote}"))))
+            (close-output-port output)
+            (write-string (string-append (get-output-string output) (string #\newline)) to))
+           (else
+            (write-char p output)
+            (loop (read-char port)))))
+           (close-input-port port)))
+
+    (when in-quote-block?
+      (write-string "{quote}" to)))
+  (force-output to)
+  (close-output-port to))
