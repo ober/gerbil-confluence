@@ -28,7 +28,7 @@
 
 (export #t)
 (declare (not optimize-dead-definitions))
-(def version "0.08")
+(def version "0.09")
 
 (def config-file "~/.confluence.yaml")
 
@@ -64,7 +64,7 @@
                                          ("value" (read-file-string content-file))
                                          ("representation" "storage")))))
                     ("version" (hash ("number" (1+ current-number))))))
-             (results (do-put url (default-headers .basic-auth) (json-object->string data)))
+             (results (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
              (status (request-status results))
              (text (request-text results)))
         (displayln "status is " status " text is " text))))
@@ -84,7 +84,7 @@
                             (hash
                              ("value" (read-file-string content-file))
                              ("representation" "storage")))))))
-	   (results (do-post-generic url (default-headers .basic-auth) (json-object->string data))))
+	   (results (rest-call 'post url (default-headers .basic-auth) (json-object->string data))))
       (displayln results))))
 
 (def (convert markdown-file)
@@ -93,7 +93,7 @@
 	   (data (hash
 		  ("value" (read-file-string markdown-file))
 		  ("representation" "wiki")))
-	   (results (do-post-generic
+	   (results (rest-call 'post
 		     url
 		     (default-headers .basic-auth)
 		     (json-object->string data)))
@@ -133,10 +133,7 @@
 	   (data (hash
 		  ("value" (read-file-string in-file))
 		  ("representation" in-format)))
-	   (results (do-post-generic
-		     url
-		     (default-headers .basic-auth)
-		     (json-object->string data)))
+	   (results (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
 	   (myjson (from-json results))
            (cml (format "~a.cml" (pregexp-replace ".cmd" in-file ""))))
       (let-hash myjson
@@ -144,7 +141,7 @@
 
 (def (longtask last)
   (let-hash (load-config)
-    (let* ((results (do-get-generic (format "~a/longtask" .url) default-headers)))
+    (let* ((results (rest-call 'get (format "~a/longtask" .url) (default-headers))))
       ;;(myjson (with-input-from-string results read-json)))
       (displayln (hash->list results)))))
 
@@ -152,7 +149,7 @@
   "Delete Confluence document with the id"
   (let-hash (load-config)
     (let* ((url (format "~a/rest/api/content?id=~a" .url id))
-           (results (do-delete url (default-headers .basic-auth))))
+           (results (rest-call 'delete url (default-headers .basic-auth))))
       ;;           (myjson (from-json results)))
       (displayln results))))
 
@@ -170,7 +167,7 @@
 	   (url (if (string-contains query "~")
                   (format "~a/rest/api/content/search?cql=~a" .url query)
                   (format "~a/rest/api/content/search?cql=text~~~a" .url query)))
-	   (results (do-get-generic url (default-headers .basic-auth)))
+	   (results (rest-call 'get url (default-headers .basic-auth)))
 	   (myjson (from-json results))
            (docs (let-hash myjson .results))
            (headers (if (and sf
@@ -212,15 +209,9 @@
   "Return json object of the document with id"
   (let-hash (load-config)
     (let* ((url (format "~a/rest/api/content/~a" .url id))
-	   (results (do-get-generic url (default-headers .basic-auth))))
+	   (results (rest-call 'get url (default-headers .basic-auth))))
       results)))
 
-(def (default-headers basic)
-  [
-   ["Accept" :: "*/*"]
-   ["Content-type" :: "application/json"]
-   ["Authorization" :: basic ]
-   ])
 
 (def (load-config)
   (let ((config (hash))
@@ -245,7 +236,7 @@
 (def (body id)
   (let-hash (load-config)
     (let* ((url (format "~a/rest/api/content/~a?expand=body.view&depth=all" .url id))
-	   (results (do-get-generic url (default-headers .basic-auth)))
+	   (results (rest-call 'get url (default-headers .basic-auth)))
 	   (myjson (with-input-from-string results read-json)))
       (let-hash myjson
 	(let-hash .body
