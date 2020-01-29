@@ -168,38 +168,41 @@
                   (format "~a/rest/api/content/search?cql=~a" .url query)
                   (format "~a/rest/api/content/search?cql=text~~~a" .url query)))
 	   (results (rest-call 'get url (default-headers .basic-auth)))
-	   (myjson (from-json results))
-           (docs (let-hash myjson .results))
            (headers (if (and sf
                              (list? sf)
                              (length>n? sf 1))
                       sf
                       df)))
-      (set! outs (cons headers outs))
-      (for (doc docs)
-           (dp (hash->list doc))
-           (let ((row (hash)))
-             (let-hash doc
-               (when (and .?_expandable
-                          (table? .?_expandable))
-                 (let-hash .?_expandable
-                   (hash-put! row "expandables" (hash-keys .._expandable))
-                   (hash-put! row "space" .?space)))
-               (hash-put! row "id" .?id)
-               (hash-put! row "title" .?title)
-               (hash-put! row "status" .?status)
-               (hash-put! row "type" .?type)
-               (when (and .?_links
-                          (table? ._links))
-                 (let-hash ._links
-                   (hash-put! row "tinyurl" (if .?tinyui
-                                              (format "~a~a" ...?url .tinyui)
-                                              "N/A"))
-                   (hash-put! row "url" (if .?webui
-                                          (format "~a~a" ...?url .webui)
-                                          "N/A")))))
-             (set! outs (cons (filter-row-hash row headers) outs))))
-      (style-output outs))))
+
+      (with ([ status body ] results)
+        (if status
+          (let-hash body
+            (set! outs (cons headers outs))
+            (for (doc .results)
+              (dp (hash->list doc))
+              (let ((row (hash)))
+                (let-hash doc
+                  (when (and .?_expandable
+                             (table? .?_expandable))
+                    (let-hash .?_expandable
+                      (hash-put! row "expandables" (hash-keys .._expandable))
+                      (hash-put! row "space" .?space)))
+                  (hash-put! row "id" .?id)
+                  (hash-put! row "title" .?title)
+                  (hash-put! row "status" .?status)
+                  (hash-put! row "type" .?type)
+                  (when (and .?_links
+                             (table? ._links))
+                    (let-hash ._links
+                      (hash-put! row "tinyurl" (if .?tinyui
+                                                 (format "~a~a" ...?url .tinyui)
+                                                 "N/A"))
+                      (hash-put! row "url" (if .?webui
+                                             (format "~a~a" ...?url .webui)
+                                             "N/A")))))
+                (set! outs (cons (filter-row-hash row headers) outs))))
+            (style-output outs))
+          (displayln body))))))
 
 (def (info id)
   "Interactive version"
