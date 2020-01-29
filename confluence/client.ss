@@ -141,7 +141,7 @@
 
 (def (longtask last)
   (let-hash (load-config)
-    (let* ((results (rest-call 'get (format "~a/longtask" .url) (default-headers))))
+    (let* ((results (rest-call 'get (format "~a/longtask" .url) (default-headers .basic-auth))))
       ;;(myjson (with-input-from-string results read-json)))
       (displayln (hash->list results)))))
 
@@ -367,3 +367,10 @@
       (write-string "{quote}" to)))
   (force-output to)
   (close-output-port to))
+
+(def (default-headers basic)
+  [
+   ["Accept" :: "*/*"]
+   ["Content-type" :: "application/json"]
+   ["Authorization" :: basic ]
+   ])
