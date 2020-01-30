@@ -93,14 +93,14 @@
 	   (data (hash
 		  ("value" (read-file-string markdown-file))
 		  ("representation" "wiki")))
-	   (results (rest-call 'post
-		     url
-		     (default-headers .basic-auth)
-		     (json-object->string data)))
-	   (myjson (from-json results))
            (cml (format "~a.cml" (pregexp-replace ".cmd" markdown-file ""))))
-      (let-hash myjson
-        (with-output-to-file cml (cut displayln .value))))))
+      (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        (displayln body)
+        (when (table? body)
+          (let-hash body
+            (with-output-to-file cml (cut displayln .value))))))))
 
 (def (md2c markdown-file)
   (let ((cml (format "~a.cmd" (pregexp-replace ".md" markdown-file ""))))
