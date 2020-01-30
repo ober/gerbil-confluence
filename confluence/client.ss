@@ -50,7 +50,7 @@
   "Update the Body of a document with the contents of content-file on document of id"
   (let-hash (ensure-config)
       (let* ((url (format "~a/rest/api/content/~a" .url id))
-             (current (from-json (get id)))
+             (current (get id))
              (current-title (let-hash current .title))
              (new-title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
              (current-number (let-hash current (let-hash .version .number)))
@@ -63,11 +63,11 @@
                              ("storage" (hash
                                          ("value" (read-file-string content-file))
                                          ("representation" "storage")))))
-                    ("version" (hash ("number" (1+ current-number))))))
-             (results (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
-             (status (request-status results))
-             (text (request-text results)))
-        (displayln "status is " status " text is " text))))
+                    ("version" (hash ("number" (1+ current-number)))))))
+        (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
+          (unless status
+            (error body))
+          (present-item body)))))
 
 (def (create content-file)
   "Create a new document in Confluence containing the content of content-file
@@ -175,7 +175,9 @@
                       df)))
 
       (with ([ status body ] results)
-        (if status
+        (unless status
+          (error body))
+        (when (table? body)
           (let-hash body
             (set! outs (cons headers outs))
             (for (doc .results)
@@ -193,16 +195,17 @@
                   (hash-put! row "type" .?type)
                   (when (and .?_links
                              (table? ._links))
+                    (present-item ._links)
                     (let-hash ._links
                       (hash-put! row "tinyurl" (if .?tinyui
-                                                 (format "~a~a" ...?url .tinyui)
+                                                 (format "~a~a" ....?url .tinyui)
                                                  "N/A"))
                       (hash-put! row "url" (if .?webui
-                                             (format "~a~a" ...?url .webui)
+                                             (format "~a~a" ....?url .webui)
                                              "N/A")))))
                 (set! outs (cons (filter-row-hash row headers) outs))))
-            (style-output outs))
-          (displayln body))))))
+            (style-output outs)))))))
+
 
 (def (info id)
   "Interactive version"
@@ -211,10 +214,11 @@
 (def (get id)
   "Return json object of the document with id"
   (let-hash (load-config)
-    (let* ((url (format "~a/rest/api/content/~a" .url id))
-	   (results (rest-call 'get url (default-headers .basic-auth))))
-      results)))
-
+    (let (url (format "~a/rest/api/content/~a" .url id))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
 
 (def (load-config)
   (let ((config (hash))
