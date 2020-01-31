@@ -195,7 +195,6 @@
                   (hash-put! row "type" .?type)
                   (when (and .?_links
                              (table? ._links))
-                    (present-item ._links)
                     (let-hash ._links
                       (hash-put! row "tinyurl" (if .?tinyui
                                                  (format "~a~a" ....?url .tinyui)
