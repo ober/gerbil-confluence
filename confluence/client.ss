@@ -85,9 +85,10 @@
                              ("value" (read-file-string content-file))
                              ("representation" "storage"))))))))
 
-      (with
-          (rest-call 'post url (default-headers .basic-auth) (json-object->string data))))
-      (present-item results))))
+      (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        (present-item body)))))
 
 (def (convert markdown-file)
   (let-hash (load-config)
@@ -134,25 +135,29 @@
 	   (data (hash
 		  ("value" (read-file-string in-file))
 		  ("representation" in-format)))
-	   (results (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
-	   (myjson (from-json results))
            (cml (format "~a.cml" (pregexp-replace ".cmd" in-file ""))))
-      (let-hash myjson
-        (with-output-to-file cml (cut displayln .value))))))
+      (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        (when (table? body)
+          (let-hash body
+            (with-output-to-file cml (cut displayln .value))))))))
 
 (def (longtask last)
   (let-hash (load-config)
-    (let* ((results (rest-call 'get (format "~a/longtask" .url) (default-headers .basic-auth))))
-      ;;(myjson (with-input-from-string results read-json)))
-      (displayln (hash->list results)))))
+    (with ([status body] (rest-call 'get (format "~a/longtask" .url) (default-headers .basic-auth)))
+      (unless status
+        (error body))
+      (present-item body))))
 
 (def (remove-doc id)
   "Delete Confluence document with the id"
   (let-hash (load-config)
-    (let* ((url (format "~a/rest/api/content?id=~a" .url id))
-           (results (rest-call 'delete url (default-headers .basic-auth))))
-      ;;           (myjson (from-json results)))
-      (displayln results))))
+    (let (url (format "~a/rest/api/content?id=~a" .url id))
+      (with ([status body] (rest-call 'delete url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        (present-item body)))))
 
 (def (make-web-safe string)
   (let* ((output (pregexp-replace* " " string "%20")))
@@ -168,14 +173,12 @@
 	   (url (if (string-contains query "~")
                   (format "~a/rest/api/content/search?cql=~a" .url query)
                   (format "~a/rest/api/content/search?cql=text~~~a" .url query)))
-	   (results (rest-call 'get url (default-headers .basic-auth)))
            (headers (if (and sf
                              (list? sf)
                              (length>n? sf 1))
                       sf
                       df)))
-
-      (with ([ status body ] results)
+      (with ([ status body ] (rest-call 'get url (default-headers .basic-auth)))
         (unless status
           (error body))
         (when (table? body)
@@ -241,13 +244,16 @@
 
 (def (body id)
   (let-hash (load-config)
-    (let* ((url (format "~a/rest/api/content/~a?expand=body.view&depth=all" .url id))
-	   (results (rest-call 'get url (default-headers .basic-auth)))
-	   (myjson (with-input-from-string results read-json)))
-      (let-hash myjson
-	(let-hash .body
-	  (let-hash .view
-	    (displayln .value)))))))
+    (let (url (format "~a/rest/api/content/~a?expand=body.view&depth=all" .url id))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (raise body))
+        (when (table? body)
+          (let-hash body
+            (when (table? .?body)
+              (let-hash .body
+                (let-hash .view
+                  (present-item .?value))))))))))
 
 (def (config)
   (let-hash (load-config)
