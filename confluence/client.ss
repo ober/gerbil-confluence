@@ -3,6 +3,7 @@
 
 (import
   :gerbil/gambit
+  :ober/oberlib
   :std/crypto/cipher
   :std/crypto/etc
   :std/crypto/libcrypto
@@ -10,8 +11,8 @@
   :std/generic
   :std/generic/dispatch
   :std/iter
-  :std/misc/list
   :std/misc/channel
+  :std/misc/list
   :std/misc/ports
   :std/net/address
   :std/net/request
@@ -23,7 +24,6 @@
   :std/text/base64
   :std/text/json
   :std/text/utf8
-  :ober/oberlib
   :std/text/yaml)
 
 (export #t)
@@ -83,9 +83,11 @@
                            ("storage"
                             (hash
                              ("value" (read-file-string content-file))
-                             ("representation" "storage")))))))
-	   (results (rest-call 'post url (default-headers .basic-auth) (json-object->string data))))
-      (displayln results))))
+                             ("representation" "storage"))))))))
+
+      (with
+          (rest-call 'post url (default-headers .basic-auth) (json-object->string data))))
+      (present-item results))))
 
 (def (convert markdown-file)
   (let-hash (load-config)
@@ -97,7 +99,6 @@
       (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
         (unless status
           (error body))
-        (displayln body)
         (when (table? body)
           (let-hash body
             (with-output-to-file cml (cut displayln .value))))))))
@@ -204,7 +205,6 @@
                                              "N/A")))))
                 (set! outs (cons (filter-row-hash row headers) outs))))
             (style-output outs)))))))
-
 
 (def (info id)
   "Interactive version"
