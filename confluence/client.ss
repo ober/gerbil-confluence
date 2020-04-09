@@ -211,7 +211,7 @@
 
 (def (info id)
   "Interactive version"
-  (displayln (get id)))
+  (pi (get id)))
 
 (def (get id)
   "Return json object of the document with id"
