@@ -47,3 +47,12 @@ else
 endif
 
 test-update:
+
+linux-static:
+	docker run -e PATH=/root/gerbil/bin:/usr/local/gambit/current/bin:/bin:/sbin:/usr/bin:/usr/sbin -e GERBIL_HOME=/root/gerbil -e GERBIL_PATH=/dd/.gerbil -v $(PWD):/dd -it jaimef/centos bash -c 'cd /dd && make linux-static-intern'
+
+linux-static-intern:
+	cd /dd && gxpkg link ober/confluence . || true
+	gxpkg install github.com/ober/oberlib
+#	gxpkg build ober/confluence
+	gxc -o confluence-static -cc-options "-Bstatic -DOPENSSL_NO_KRB5 -I/usr/local/include -I/usr/local/ssl/include" -static -ld-options "-static -lpthread -L/usr/lib64 -L/usr/local/ssl/lib -lssl -L/usr/local/lib -ldl -lyaml -lz" -exe confluence/confluence.ss
