@@ -88,7 +88,17 @@
       (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
         (unless status
           (error body))
-        (present-item body)))))
+        (when (table? body)
+          (let-hash body
+            (when (table? .?_links)
+              (let-hash ._links
+                (pi (format "id: ~a url: ~a status: ~a title: ~a"
+                            ..?id
+                            (if .?tinyui
+                              (format "~a~a" ...?url .tinyui)
+                              "N/A")
+                            ..?status
+                            ..?title))))))))))
 
 (def (convert markdown-file)
   (let-hash (load-config)
