@@ -163,7 +163,7 @@
 (def (remove-doc id)
   "Delete Confluence document with the id"
   (let-hash (load-config)
-    (let (url (format "~a/rest/api/content?id=~a" .url id))
+    (let (url (format "~a/rest/api/content/~a" .url id))
       (with ([status body] (rest-call 'delete url (default-headers .basic-auth)))
         (unless status
           (error body))
