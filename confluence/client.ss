@@ -5,26 +5,21 @@
   :gerbil/gambit
   :ober/oberlib
   :std/crypto/cipher
-  :std/crypto/etc
-  :std/crypto/libcrypto
+  :std/error
   :std/format
-  :std/generic
   :std/generic/dispatch
   :std/iter
-  :std/misc/channel
+  :std/logger
   :std/misc/list
-  :std/misc/ports
-  :std/net/address
-  :std/net/request
+  :std/net/websocket
   :std/pregexp
   :std/srfi/13
-  :std/srfi/19
-  :std/srfi/95
   :std/sugar
   :std/text/base64
   :std/text/json
-  :std/text/utf8
-  :std/text/yaml)
+  :std/text/yaml
+  :std/misc/ports
+)
 
 (export #t)
 (declare (not optimize-dead-definitions))
