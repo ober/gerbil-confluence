@@ -22,7 +22,7 @@
 
 (export #t)
 (declare (not optimize-dead-definitions))
-(def version "0.11")
+(def version "0.12")
 
 (def config-file "~/.confluence.yaml")
 
