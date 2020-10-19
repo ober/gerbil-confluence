@@ -18,12 +18,11 @@
   :std/text/base64
   :std/text/json
   :std/text/yaml
-  :std/misc/ports
-)
+  :std/misc/ports)
 
 (export #t)
 (declare (not optimize-dead-definitions))
-(def version "0.10")
+(def version "0.11")
 
 (def config-file "~/.confluence.yaml")
 
@@ -44,7 +43,7 @@
 (def (update id content-file)
   "Update the Body of a document with the contents of content-file on document of id"
   (let-hash (ensure-config)
-      (let* ((url (format "~a/rest/api/content/~a" .url id))
+      (let* ((url (format "~a/wiki/rest/api/content/~a" .url id))
              (current (get id))
              (current-title (let-hash current .title))
              (new-title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
@@ -68,7 +67,7 @@
   "Create a new document in Confluence containing the content of content-file
    Use naming convention with hypens -> Spaces, and .cml ending for file ending"
   (let-hash (ensure-config)
-    (let* ((url (format "~a/rest/api/content?expand=body" .url))
+    (let* ((url (format "~a/wiki/rest/api/content?expand=body" .url))
            (title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
            (data (hash
                   ("type" "page")
@@ -97,7 +96,7 @@
 
 (def (convert markdown-file)
   (let-hash (load-config)
-    (let* ((url (format "~a/rest/api/contentbody/convert/storage" .url))
+    (let* ((url (format "~a/wiki/rest/api/contentbody/convert/storage" .url))
 	   (data (hash
 		  ("value" (read-file-string markdown-file))
 		  ("representation" "wiki")))
@@ -136,7 +135,7 @@
 
 (def (converter in-file in-format out-format)
   (let-hash (load-config)
-    (let* ((url (format "~a/rest/api/contentbody/convert/~a" .url out-format))
+    (let* ((url (format "~a/wiki/rest/api/contentbody/convert/~a" .url out-format))
 	   (data (hash
 		  ("value" (read-file-string in-file))
 		  ("representation" in-format)))
@@ -158,7 +157,7 @@
 (def (remove-doc id)
   "Delete Confluence document with the id"
   (let-hash (load-config)
-    (let (url (format "~a/rest/api/content/~a" .url id))
+    (let (url (format "~a/wiki/rest/api/content/~a" .url id))
       (with ([status body] (rest-call 'delete url (default-headers .basic-auth)))
         (unless status
           (error body))
@@ -176,8 +175,8 @@
            (sf .?search-fields)
            (query (make-web-safe q))
 	   (url (if (string-contains query "~")
-                  (format "~a/rest/api/content/search?cql=~a" .url query)
-                  (format "~a/rest/api/content/search?cql=text~~~a" .url query)))
+                  (format "~a/wiki/rest/api/content/search?cql=~a" .url query)
+                  (format "~a/wiki/rest/api/content/search?cql=text~~~a" .url query)))
            (headers (if (and sf
                              (list? sf)
                              (length>n? sf 1))
@@ -221,7 +220,7 @@
 (def (get id)
   "Return json object of the document with id"
   (let-hash (load-config)
-    (let (url (format "~a/rest/api/content/~a" .url id))
+    (let (url (format "~a/wiki/rest/api/content/~a" .url id))
       (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
         (unless status
           (error body))
@@ -249,7 +248,7 @@
 
 (def (body id)
   (let-hash (load-config)
-    (let (url (format "~a/rest/api/content/~a?expand=body.view&depth=all" .url id))
+    (let (url (format "~a/wiki/rest/api/content/~a?expand=body.view&depth=all" .url id))
       (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
         (unless status
           (raise body))
