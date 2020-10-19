@@ -205,10 +205,10 @@
                              (table? ._links))
                     (let-hash ._links
                       (hash-put! row "tinyurl" (if .?tinyui
-                                                 (format "~a/wiki/~a" ....?url .tinyui)
+                                                 (format "~a/wiki~a" ....?url .tinyui)
                                                  "N/A"))
                       (hash-put! row "url" (if .?webui
-                                             (format "~a/wiki/~a" ....?url .webui)
+                                             (format "~a/wiki~a" ....?url .webui)
                                              "N/A")))))
                 (set! outs (cons (filter-row-hash row headers) outs))))
             (style-output outs)))))))
