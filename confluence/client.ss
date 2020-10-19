@@ -205,7 +205,7 @@
                              (table? ._links))
                     (let-hash ._links
                       (hash-put! row "tinyurl" (if .?tinyui
-                                                 (format "~a~a" ....?url .tinyui)
+                                                 (format "~a/wiki/~a" ....?url .tinyui)
                                                  "N/A"))
                       (hash-put! row "url" (if .?webui
                                              (format "~a~a" ....?url .webui)
