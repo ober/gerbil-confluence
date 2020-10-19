@@ -208,7 +208,7 @@
                                                  (format "~a/wiki/~a" ....?url .tinyui)
                                                  "N/A"))
                       (hash-put! row "url" (if .?webui
-                                             (format "~a~a" ....?url .webui)
+                                             (format "~a/wiki/~a" ....?url .webui)
                                              "N/A")))))
                 (set! outs (cons (filter-row-hash row headers) outs))))
             (style-output outs)))))))
