@@ -89,7 +89,7 @@
                 (pi (format "id: ~a url: ~a status: ~a title: ~a"
                             ..?id
                             (if .?tinyui
-                              (format "~a~a" ...?url .tinyui)
+                              (format "~a/wiki~a" ...?url .tinyui)
                               "N/A")
                             ..?status
                             ..?title))))))))))
