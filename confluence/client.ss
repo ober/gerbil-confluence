@@ -215,7 +215,19 @@
 
 (def (info id)
   "Interactive version"
-  (pi (get id)))
+  (let ((docinfo (get id)))
+    (if (table? docinfo)
+      (let-hash docinfo
+        (displayln "id:" .?id)
+        (displayln "status:" .?status)
+        (pi .?extentions)
+        (pi .?version)
+        (pi .?history)
+        (pi .?title)
+        (pi .?macroRenderedOutput)
+        (pi .?_expandable)
+        (pi .?type)
+        (pi .?_links)))))
 
 (def (get id)
   "Return json object of the document with id"
