@@ -22,7 +22,7 @@
 
 (export #t)
 (declare (not optimize-dead-definitions))
-(def version "0.13")
+(def version "0.14")
 
 (def config-file "~/.confluence.yaml")
 
@@ -174,9 +174,11 @@
            (df [ "id" "type" "status" "title" "space" "expandables" "tinyurl" ])
            (sf .?search-fields)
            (query (make-web-safe q))
-	   (url (if (string-contains query "~")
-                  (format "~a/wiki/rest/api/content/search?cql=~a" .url query)
-                  (format "~a/wiki/rest/api/content/search?cql=text~~~a" .url query)))
+	   (url (if (or
+                      (string-contains query "~")
+                      (string-contains query "="))
+                  (format "~a/wiki/rest/api/content/search?cql=~a&expand=ancestors,container" .url query)
+                  (format "~a/wiki/rest/api/content/search?cql=text~~~a&expand=ancestors,container" .url query)))
            (headers (if (and sf
                              (list? sf)
                              (length>n? sf 1))
@@ -201,6 +203,7 @@
                   (hash-put! row "title" .?title)
                   (hash-put! row "status" .?status)
                   (hash-put! row "type" .?type)
+                  (hash-put! row "ancestors" (process-ancestors .?ancestors))
                   (when (and .?_links
                              (table? ._links))
                     (let-hash ._links
@@ -213,21 +216,64 @@
                 (set! outs (cons (filter-row-hash row headers) outs))))
             (style-output outs)))))))
 
-(def (info id)
-  "Interactive version"
-  (let ((docinfo (get id)))
+(def (process-ancestors ancestors)
+  "Given an ancestor list walk through and get ids/urls"
+  (let ((results []))
+    (when (list? ancestors)
+      (for (parent ancestors)
+        (let-hash parent
+          (set! results (cons (format "~a:~a" .?id .?title) results)))))
+    (string-join results ",")))
+
+(def (subpages id)
+  "List all Sub pages of given id"
+  (let ((docinfo (get-more id))
+        (outs [[ "id" "title" "status" "_links" "macroRenderedOutput" "extensions" "_expandable" ]]))
     (if (table? docinfo)
       (let-hash docinfo
-        (displayln "id:" .?id)
-        (displayln "status:" .?status)
-        (pi .?extentions)
-        (pi .?version)
-        (pi .?history)
-        (pi .?title)
-        (pi .?macroRenderedOutput)
-        (pi .?_expandable)
-        (pi .?type)
-        (pi .?_links)))))
+        (let-hash .?children
+          (let-hash .?page
+            (when (and .?results
+                       (list? .results))
+              (for (result .results)
+                (when (table? result)
+                  (let-hash result
+                    (set! outs (cons [ .?id .?title .?status (hash->list .?macroRenderedOutput) (hash->list .?extensions) (hash->list .?_expandable) ] outs))))))))))
+    (style-output outs)))
+
+(def (show-parents id)
+  "Interactive version"
+  (let ((docinfo (get-more id)))
+    (when (table? docinfo)
+      (let-hash docinfo
+        (when .?ancestors
+          (pi (process-ancestors .ancestors)))))))
+
+
+  (def (info id)
+  "Interactive version"
+  (let ((docinfo (get-more id)))
+    (when (table? docinfo)
+      (let-hash docinfo
+        (when .?children
+          (when (table? .children)
+            (let-hash .children
+              (when .?page
+                (when (table? .page)
+                  (let-hash .page
+                    (when (and .?results
+                               (list? .results))
+                      (for (result .results)
+                        (pi result)))))))))))))
+
+(def (get-more id)
+  "Return json object of the document with id"
+  (let-hash (load-config)
+    (let (url (format "~a/wiki/rest/api/content/~a?expand=children.page,ancestors" .url id))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
 
 (def (get id)
   "Return json object of the document with id"
