@@ -52,7 +52,7 @@ endif
 test-update:
 
 linux-static:
-	docker run -e PATH=/root/gerbil/bin:/usr/local/gambit/current/bin:/bin:/sbin:/usr/bin:/usr/sbin -e GERBIL_HOME=/root/gerbil -e GERBIL_PATH=/dd/.gerbil -v $(PWD):/dd -it jaimef/centos bash -c 'cd /dd && make linux-static-intern'
+	docker run -e PATH=/usr/local/gambit/bin:/usr/local/gerbil/bin:/bin:/sbin:/usr/bin:/usr/sbin -e GERBIL_HOME=/root/gerbil -e GERBIL_PATH=/dd/.gerbil -v $(PWD):/dd -it jaimef/centos bash -c 'cd /dd && make linux-static-intern'
 
 linux-static-intern:
 	unset http_proxy https_proxy
