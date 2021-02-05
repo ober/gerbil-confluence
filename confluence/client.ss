@@ -43,25 +43,25 @@
 (def (update id content-file)
   "Update the Body of a document with the contents of content-file on document of id"
   (let-hash (ensure-config)
-      (let* ((url (format "~a/wiki/rest/api/content/~a" .url id))
-             (current (get id))
-             (current-title (let-hash current .title))
-             (new-title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
-             (current-number (let-hash current (let-hash .version .number)))
-             (data (hash
-                    ("type" "page")
-                    ("title" new-title)
-                    ("space" (hash
-                              ("key" .?space)))
-                    ("body" (hash
-                             ("storage" (hash
-                                         ("value" (read-file-string content-file))
-                                         ("representation" "storage")))))
-                    ("version" (hash ("number" (1+ current-number)))))))
-        (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
-          (unless status
-            (error body))
-          (present-item body)))))
+    (let* ((url (format "~a/wiki/rest/api/content/~a" .url id))
+           (current (get id))
+           (current-title (let-hash current .title))
+           (new-title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
+           (current-number (let-hash current (let-hash .version .number)))
+           (data (hash
+                  ("type" "page")
+                  ("title" new-title)
+                  ("space" (hash
+                            ("key" .?space)))
+                  ("body" (hash
+                           ("storage" (hash
+                                       ("value" (read-file-string content-file))
+                                       ("representation" "storage")))))
+                  ("version" (hash ("number" (1+ current-number)))))))
+      (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        (present-item body)))))
 
 (def (create content-file)
   "Create a new document in Confluence containing the content of content-file
@@ -112,26 +112,6 @@
   (let ((cml (format "~a.cmd" (pregexp-replace ".md" markdown-file ""))))
     (markdown-to-confluence markdown-file cml)
     (displayln "Output file " cml " created.")))
-
-;; (def (md2c markdown-file)
-;;   (let* ((data (read-file-string markdown-file))
-;;          (rules [
-;;                  [ "^# ([a-zA-Z0-9]+)$" "h1. \\1" ]
-;;                  [ "^## ([a-zA-Z0-9]+)$" "h2. \\1" ]
-;;                  [ "^### ([a-zA-Z0-9]+)$" "h3. \\1" ]
-;;                  [ "^#### ([a-zA-Z0-9]+)$" "h4. \\1" ]
-;;                  [ "^##### ([a-zA-Z0-9]+)$" "h5. \\1" ]
-;;                  ])
-;;          (results ""))
-;;     (with-output-to-file cml
-;;       (lambda ()
-;;         (set! results data)
-;;         (for (rule rules)
-;;           (let ((pattern (nth 0 rule))
-;;                 (substitution (nth 1 rule)))
-;;             (displayln "pattern is " pattern " substitution is " substitution)
-;;             (set! results (pregexp-replace* pattern data substitution))))
-;;         (displayln data)))))
 
 (def (converter in-file in-format out-format)
   (let-hash (load-config)
@@ -249,8 +229,7 @@
         (when .?ancestors
           (pi (process-ancestors .ancestors)))))))
 
-
-  (def (info id)
+(def (info id)
   "Interactive version"
   (let ((docinfo (get-more id)))
     (when (table? docinfo)
@@ -435,7 +414,7 @@
            (else
             (write-char p output)
             (loop (read-char port)))))
-           (close-input-port port)))
+        (close-input-port port)))
 
     (when in-quote-block?
       (write-string "{quote}" to)))

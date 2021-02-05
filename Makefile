@@ -56,7 +56,8 @@ linux-static:
 
 linux-static-intern:
 	unset http_proxy https_proxy
-	cd /dd && gxpkg link ober/confluence . || true
+	curl -k -L -o /tmp/yaml.tgz https://github.com/yaml/libyaml/archive/0.2.4/libyaml-dist-0.2.4.tar.gz
+	cd /tmp && tar -xf yaml.tgz && cd libyaml-0* && ./bootstrap && ./configure --prefix=/usr && make -j4 && make install
+	yum install -y zlib-static openssl-static libyaml-devel
 	gxpkg install github.com/ober/oberlib
-#	gxpkg build ober/confluence
-	gxc -o confluence-static -cc-options "-Bstatic -DOPENSSL_NO_KRB5 -I/usr/local/include -I/usr/local/ssl/include" -static -ld-options "-static -lpthread -L/usr/lib64 -L/usr/local/ssl/lib -lssl -L/usr/local/lib -ldl -lyaml -lz" -exe confluence/confluence.ss
+	gxc -o confluence-static -cc-options "-Bstatic -DOPENSSL_NO_KRB5 -I/usr/local/include -I/usr/local/ssl/include" -static -ld-options "-static -DOPENSSL_NO_KRB5 -lpthread -L/usr/lib64 -L/usr/lib -L/usr/local/ssl/lib -lssl -L/usr/local/lib -ldl -lyaml -lz" -exe confluence/confluence.ss
