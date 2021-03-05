@@ -40,14 +40,21 @@
           (exit 2))))
     config))
 
+(def (get-increment-number id)
+  "Given an id, return the latest "
+  (let ((info (get id)))
+    (when (table? info)
+      (let-hash info
+        (when (table? .?version)
+          (let-hash .version
+            .?number))))))
+
 (def (update id content-file)
   "Update the Body of a document with the contents of content-file on document of id"
-  (let-hash (ensure-config)
+  (let-hash (load-config)
     (let* ((url (format "~a/wiki/rest/api/content/~a" .url id))
-           (current (get id))
-           (current-title (let-hash current .title))
            (new-title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
-           (current-number (let-hash current (let-hash .version .number)))
+           (version (get-increment-number id))
            (data (hash
                   ("type" "page")
                   ("title" new-title)
@@ -57,7 +64,8 @@
                            ("storage" (hash
                                        ("value" (read-file-string content-file))
                                        ("representation" "storage")))))
-                  ("version" (hash ("number" (1+ current-number)))))))
+                  ("version" (hash ("number" (1+ version))))
+                  )))
       (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
         (unless status
           (error body))
