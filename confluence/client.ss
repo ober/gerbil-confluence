@@ -54,21 +54,21 @@
   (let (version (string->number (get-increment-number id)))
     (update-batch version id content-file)))
 
-(def (update-batch version id content-file)
+(def (update-batch version id title content-file)
   "Update the Body of a document with the contents of content-file on document of id"
   (let-hash (load-config)
     (let* ((url (format "~a/wiki/rest/api/content/~a" .url id))
            (new-title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
            (data (hash
                   ("type" "page")
-                  ("title" new-title)
+                  ("title" title)
                   ("space" (hash
                             ("key" .?space)))
                   ("body" (hash
                            ("storage" (hash
                                        ("value" (read-file-string content-file))
                                        ("representation" "storage")))))
-                  ("version" (hash ("number" (1+ version))))
+                  ("version" (hash ("number" (1+ (string->number version)))))
                   )))
       (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
         (unless status
