@@ -47,14 +47,18 @@
       (let-hash info
         (when (table? .?version)
           (let-hash .version
-            .?number))))))
+            (string->number .?number)))))))
 
 (def (update id content-file)
+  "Update the Body of a document with the contents of content-file on document of id"
+  (let (version (string->number (get-increment-number id)))
+    (update-batch version id content-file)))
+
+(def (update-batch version id content-file)
   "Update the Body of a document with the contents of content-file on document of id"
   (let-hash (load-config)
     (let* ((url (format "~a/wiki/rest/api/content/~a" .url id))
            (new-title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
-           (version (get-increment-number id))
            (data (hash
                   ("type" "page")
                   ("title" new-title)
