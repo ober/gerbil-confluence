@@ -1,12 +1,35 @@
-.PHONY: confluence
+PROJECT := confluence
+$(eval uid := $(shell id -u))
+$(eval gid := $(shell id -g))
 
+default: linux-static-docker
 
-docker:
-	docker build --rm=true -t confluence .
-	docker tag confluence jaimef/confluence
+deps:
+	$(GERBIL_HOME)/bin/gxpkg install github.com/ober/oberlib
 
-push:
-	docker push jaimef/confluence
+build: deps
+	$(GERBIL_HOME)/bin/gxpkg link $(PROJECT) /src || true
+	$(GERBIL_HOME)/bin/gxpkg build $(PROJECT)
+
+linux-static-docker:
+	docker run -it \
+	-e GERBIL_PATH=/tmp/.gerbil \
+	-u "$(uid):$(gid)" \
+	-v $(PWD):/src \
+	jaimef/alpine-current:static \
+	make -C /src linux-static
+
+linux-static: build
+	$(GERBIL_HOME)/bin/gxc -o $(PROJECT)-bin -static \
+	-cc-options "-Bstatic" \
+	-static \
+	-ld-options "-static -lpthread -L/usr/lib64 -lssl -ldl -lyaml -lz" \
+	-exe $(PROJECT)/$(PROJECT).ss
+
+clean:
+	rm -Rf $(PROJECT)-bin
+
+install: mv $(PROJECT)-bin /usr/local/bin/$(PROJECT)
 
 tests: test
 
@@ -38,13 +61,3 @@ test-md2c:
 		echo FAIL;\
 		diff -ru $(tempfile).chk $(tempfile).cmd; \
 	fi
-
-
-linux-static:
-	docker run -e PATH=/usr/local/gambit/bin:/usr/local/gerbil/bin:/bin:/sbin:/usr/bin:/usr/sbin -e GERBIL_HOME=/root/gerbil -e GERBIL_PATH=/dd/.gerbil -v $(PWD):/dd -it jaimef/centos:static bash -c 'cd /dd && make linux-static-intern'
-
-linux-static-intern:
-	gxpkg install github.com/ober/oberlib
-	gxpkg link confluence /dd || true
-	gxpkg build confluence
-	gxc -o confluence-static -cc-options "-Bstatic -DOPENSSL_NO_KRB5 -I/usr/local/include -I/usr/local/ssl/include" -static -ld-options "-static -DOPENSSL_NO_KRB5 -lpthread -L/usr/lib64 -L/usr/lib -L/usr/local/ssl/lib -lssl -L/usr/local/lib -ldl -lyaml -lz" -exe confluence/confluence.ss
