@@ -1,4 +1,4 @@
-FROM jaimef/centos:static
+FROM jaimef/alpine:static
 
 MAINTAINER jaimef@linbsd.org
 

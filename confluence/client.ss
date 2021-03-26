@@ -40,25 +40,25 @@
           (exit 2))))
     config))
 
-(def (get-increment-number id)
+(def (get-increment-number info)
   "Given an id, return the latest "
-  (let ((info (get id)))
-    (when (table? info)
-      (let-hash info
-        (when (table? .?version)
-          (let-hash .version
-            (string->number .?number)))))))
+  (when (table? info)
+    (let-hash info
+      (when (table? .?version)
+        (let-hash .version
+          (string->number .?number))))))
 
 (def (update id content-file)
   "Update the Body of a document with the contents of content-file on document of id"
-  (let (version (string->number (get-increment-number id)))
-    (update-batch version id content-file)))
+  (let* ((info (get id))
+         (title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
+         (version (string->number (get-increment-number id))))
+    (update-batch version id title content-file)))
 
 (def (update-batch version id title content-file)
   "Update the Body of a document with the contents of content-file on document of id"
   (let-hash (load-config)
     (let* ((url (format "~a/wiki/rest/api/content/~a" .url id))
-           (new-title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
            (data (hash
                   ("type" "page")
                   ("title" title)

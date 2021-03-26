@@ -29,7 +29,8 @@ linux-static: build
 clean:
 	rm -Rf $(PROJECT)-bin
 
-install: mv $(PROJECT)-bin /usr/local/bin/$(PROJECT)
+install:
+	mv $(PROJECT)-bin /usr/local/bin/$(PROJECT)
 
 tests: test
 

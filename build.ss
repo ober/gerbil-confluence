@@ -5,4 +5,7 @@
 
 (defbuild-script
   '("confluence/client"
-    (exe: "confluence/confluence")))
+    (static-exe:
+     "confluence/confluence"
+     "-ld-options"
+     "-lpthread -lyaml -ldl -lssl -lz -L/usr/lib64")))
