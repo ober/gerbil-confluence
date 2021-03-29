@@ -1,5 +1,5 @@
 ;; -*- Gerbil -*-
-;;; © ober
+;;; © ober 2021
 
 (import
   :gerbil/gambit
@@ -52,7 +52,10 @@
   "Update the Body of a document with the contents of content-file on document of id"
   (let* ((info (get id))
          (title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
-         (version (string->number (get-increment-number id))))
+         (raw (get-increment-number info))
+         (version (if (string? raw)
+                    (string->number raw)
+                    raw)))
     (update-batch version id title content-file)))
 
 (def (update-batch version id title content-file)
@@ -271,6 +274,8 @@
   (let-hash (load-config)
     (let (url (format "~a/wiki/rest/api/content/~a" .url id))
       (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (pp status)
+        (pp body)
         (unless status
           (error body))
         body))))
