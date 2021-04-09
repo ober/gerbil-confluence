@@ -46,16 +46,13 @@
     (let-hash info
       (when (table? .?version)
         (let-hash .version
-          (string->number .?number))))))
+          (any->int .?number))))))
 
 (def (update id content-file)
   "Update the Body of a document with the contents of content-file on document of id"
   (let* ((info (get id))
          (title (pregexp-replace* "-" (pregexp-replace* ".cml$" content-file "") " "))
-         (raw (get-increment-number info))
-         (version (if (string? raw)
-                    (string->number raw)
-                    raw)))
+         (version (any->int (get-increment-number info))))
     (update-batch version id title content-file)))
 
 (def (update-batch version id title content-file)
@@ -71,7 +68,7 @@
                            ("storage" (hash
                                        ("value" (read-file-string content-file))
                                        ("representation" "storage")))))
-                  ("version" (hash ("number" (1+ (string->number version)))))
+                  ("version" (hash ("number" (1+ (any->int version)))))
                   )))
       (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
         (unless status
