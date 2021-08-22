@@ -7,5 +7,7 @@
   '("confluence/client"
     (static-exe:
      "confluence/confluence"
+     "-cc-options"
+     "-I/usr/pkg/include"
      "-ld-options"
-     "-lpthread -lyaml -ldl -lssl -lz -L/usr/lib64 -L/usr/pkg/lib -I/usr/pkg/include")))
+     "-lpthread -lyaml -ldl -lssl -lz -L/usr/lib64 -L/usr/pkg/lib")))
