@@ -5,6 +5,6 @@
 
 (defbuild-script
   '("confluence/client"
-    (exe:
+    (static-exe:
      "confluence/confluence"
      )))
