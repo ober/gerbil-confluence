@@ -2,6 +2,7 @@
 ;;; © ober 2021
 
 (import
+  :clan/text/yaml
   :gerbil/gambit
   :ober/oberlib
   :std/crypto/cipher
@@ -16,7 +17,6 @@
   :std/sugar
   :std/text/base64
   :std/text/json
-  :std/text/yaml
   :std/misc/ports)
 
 (export #t)
@@ -24,8 +24,6 @@
 (def version "0.14")
 
 (def config-file "~/.confluence.yaml")
-
-(import (rename-in :gerbil/gambit/os (current-time builtin-current-time)))
 
 (def program-name "confluence")
 
