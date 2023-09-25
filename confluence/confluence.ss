@@ -21,7 +21,7 @@
   :std/sugar
   :std/text/base64
   :std/text/json
-  :std/text/yaml)
+  :clan/text/yaml)
 
 (export main)
 (declare (not optimize-dead-definitions))
