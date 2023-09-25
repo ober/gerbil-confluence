@@ -7,4 +7,6 @@
   '("confluence/client"
     (exe:
      "confluence/confluence"
+     "-ld-options"
+     "-lyaml"
      )))
