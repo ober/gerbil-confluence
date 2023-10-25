@@ -81,7 +81,7 @@
 	     (argument 'file help: "file of content>")))
 
   (def update
-    (command 'update :help "Publish an update to an existing document"
+    (command 'update help: "Publish an update to an existing document"
 	     (argument 'id help: "id of document")
 	     (argument 'file help: "file of content")))
 
