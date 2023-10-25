@@ -1,5 +1,5 @@
 ;;; -*- Gerbil -*-
-;;; © ober
+;;; © ober 2023
 ;;; Confluence Client Binary
 
 (import
@@ -10,6 +10,7 @@
   :std/error
   :std/format
   :std/generic/dispatch
+  :std/getopt
   :std/iter
   :std/logger
   :std/misc/list
@@ -24,52 +25,110 @@
   :clan/text/yaml)
 
 (export main)
-(declare (not optimize-dead-definitions))
 (def program-name "confluence")
 
-(def interactives
-  (hash
-   ("body" (hash (description: "Get body of doc") (usage: "body <id of doc>") (count: 1)))
-   ("config" (hash (description: "Setup your user and password in the config encrypted") (usage: "config") (count: 0)))
-   ("convert" (hash (description: "Convert Confluence Markup to Confluence XML™") (usage: "convert <markup .cml file>") (count: 1)))
-   ("get" (hash (description: "Retrieve information by id") (usage: "get <id>") (count: 1)))
-   ("md2c" (hash (description: "Convert file from markdown to Confluence Markup") (usage: "md2c <markdown .md file>") (count: 1)))
-   ("converter" (hash (description: "Convert Between different formats") (usage: "converter <input file> <input format: wiki, storage, view> <output format: storage, view, editor, exported_view, styled_view>") (count: 3)))
-   ("create" (hash (description: "Publish a new document")(usage: "create <file of content>") (count: 1)))
-   ("info" (hash (description: "Get information of doc") (usage: "info <id of doc>") (count: 1)))
-   ("longtask" (hash (description: "List longtasks") (usage: "longask <seconds>") (count: 1)))
-   ("remove-doc" (hash (description: "Remove a document")(usage: "remove-doc <id of doc>") (count: 1)))
-   ("search" (hash (description: "Search for docs matching string") (usage: "search <query string>") (count: 1)))
-   ("update-batch" (hash (description: "Publish an update to an existing document")(usage: "update-batch <current version> <id> <title> <file of content>") (count: 4)))
-   ("update" (hash (description: "Publish an update to an existing document")(usage: "update <id> <file of content>") (count: 2)))
-   ))
-
 (def (main . args)
-  (if (null? args)
-    (usage))
-  (let* ((argc (length args))
-	 (verb (car args))
-	 (args2 (cdr args)))
-    (unless (hash-key? interactives verb)
-      (usage))
-    (let* ((info (hash-get interactives verb))
-	   (count (hash-get info count:)))
-      (unless count
-	(set! count 0))
-      (unless (= (length args2) count)
-	(usage-verb verb))
-      (apply (eval (string->symbol (string-append "ober/confluence/client#" verb))) args2))))
+  (def body
+    (command 'body help: "Get body of doc"
+	     (argument 'id help: "id of doc")))
 
-(def (usage-verb verb)
-  (let ((howto (hash-get interactives verb)))
-    (displayln "Wrong number of arguments. Usage is:")
-    (displayln program-name " " (hash-get howto usage:))
-    (exit 2)))
+  (def config
+    (command 'config help: "Setup your user and password in the config encrypted"))
 
-(def (usage)
-  (displayln (format "Confluence: version ~a" version))
-  (displayln "Usage: confluence <verb>")
-  (displayln "Verbs:")
-  (for (k (sort! (hash-keys interactives) string<?))
-       (displayln (format "~a: ~a" k (hash-get (hash-get interactives k) description:))))
-  (exit 2))
+  (def convert
+    (command 'convert help: "Convert Confluence Markup to Confluence XML™"
+	     (argument 'file help: "markup .cml file")))
+
+  (def get
+    (command 'get help: "Retrieve information by id"
+	     (argument 'id help: "id of document")))
+
+  (def md2c
+    (command 'md2c help: "Convert file from markdown to Confluence Markup"
+	     (argument 'file help: "markdown .md file")))
+
+  (def converter
+    (command 'converter help: "Convert Between different formats"
+	     (argument 'input help: "input file")
+	     (argument 'iformat help: "In format: wiki, storage, view")
+             (argument 'oformat help:  "output format: storage, view, editor, exported_view, styled_view")))
+
+  (def create
+    (command 'create help: "Publish a new document"
+	     (argument 'file help: "file of content")))
+
+  (def info
+    (command 'info help: "Get information of doc"
+	     (argument 'id help: "id of doc")))
+
+  (def longtask
+    (command 'longtask help: "List longtasks"
+	     (argument 'secs help: "seconds")))
+
+  (def remove-doc
+    (command 'remove-doc help: "Remove a document"
+	     (argument 'id help: "id of doc")))
+
+  (def search
+    (command 'search help: "Search for docs matching string"
+	     (argument 'query help: "query string")))
+
+  (def update-batch
+    (command 'update-batch help: "Publish an update to an existing document"
+	     (argument 'version help: "current version")
+	     (argument 'id help: "id of document")
+	     (argument 'title help: "title")
+	     (argument 'file help: "file of content>")))
+
+  (def update
+    (command 'update :help "Publish an update to an existing document"
+	     (argument 'id help: "id of document")
+	     (argument 'file help: "file of content")))
+
+  (call-with-getopt process-args args
+		    program: "confluence"
+		    help: "Confluence cli in Gerbil"
+		    config
+		    body
+		    convert
+		    get
+		    md2c
+		    converter
+		    create
+		    info
+		    longtask
+		    remove-doc
+		    search
+		    update-batch
+		    update
+		    ))
+
+(def (process-args cmd opt)
+  (let-hash opt
+    (case cmd
+      ((body)
+       (body .id))
+      ((config)
+       (config))
+      ((convert)
+       (convert .file))
+      ((get)
+       (get .id))
+      ((md2c)
+       (md2c .file))
+      ((converter)
+       (converter .input .iformat .oformat))
+      ((create)
+       (create .file))
+      ((info)
+       (info .id))
+      ((longtask)
+       (longtask .secs))
+      ((remove-doc)
+       (remove-doc .id))
+      ((search)
+       (search .query))
+      ((update-batch)
+       (update-batch .version .id .title .file))
+      ((update)
+       (update .id .file)))))
