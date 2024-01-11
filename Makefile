@@ -3,16 +3,16 @@ PROJECT := confluence
 ARCH := $(shell uname -m)
 DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)"
 
-default: linux-static
+default: static
 
 deps:
 	/opt/gerbil/bin/gxpkg install github.com/ober/oberlib
 
 build: deps
 	/opt/gerbil/bin/gxpkg link $(PROJECT) /src || true
-	/opt/gerbil/bin/gxpkg build $(PROJECT)
+	/opt/gerbil/bin/gxpkg build --optimized $(PROJECT)
 
-linux-static: clean
+static: clean
 	docker run -it \
 	-e GERBIL_PATH=/src/.gerbil \
 	-e USER=$(USER) \
