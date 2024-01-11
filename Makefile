@@ -13,7 +13,7 @@ build: deps
 	/opt/gerbil/bin/gxpkg build --optimized $(PROJECT)
 
 static: clean
-	docker run -it \
+	docker run -t \
 	-e GERBIL_PATH=/src/.gerbil \
 	-e USER=$(USER) \
 	-v $(PWD):/src:z \
