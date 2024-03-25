@@ -39,9 +39,9 @@
 
 (def (get-increment-number info)
   "Given an id, return the latest "
-  (when (table? info)
+  (when (hash-table? info)
     (let-hash info
-      (when (table? .?version)
+      (when (hash-table? .?version)
         (let-hash .version
           (any->int .?number))))))
 
@@ -91,9 +91,9 @@
       (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
         (unless status
           (error body))
-        (when (table? body)
+        (when (hash-table? body)
           (let-hash body
-            (when (table? .?_links)
+            (when (hash-table? .?_links)
               (let-hash ._links
                 (pi (format "id: ~a url: ~a status: ~a title: ~a"
                             ..?id
@@ -113,7 +113,7 @@
       (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
         (unless status
           (error body))
-        (when (table? body)
+        (when (hash-table? body)
           (let-hash body
             (with-output-to-file cml (cut displayln .value))))))))
 
@@ -132,7 +132,7 @@
       (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
         (unless status
           (error body))
-        (when (table? body)
+        (when (hash-table? body)
           (let-hash body
             (with-output-to-file cml (cut displayln .value))))))))
 
@@ -176,7 +176,7 @@
       (with ([ status body ] (rest-call 'get url (default-headers .basic-auth)))
         (unless status
           (error body))
-        (when (table? body)
+        (when (hash-table? body)
           (let-hash body
             (set! outs (cons headers outs))
             (for (doc .results)
@@ -184,7 +184,7 @@
               (let ((row (hash)))
                 (let-hash doc
                   (when (and .?_expandable
-                             (table? .?_expandable))
+                             (hash-table? .?_expandable))
                     (let-hash .?_expandable
                       (hash-put! row "expandables" (hash-keys .._expandable))
                       (hash-put! row "space" .?space)))
@@ -194,7 +194,7 @@
                   (hash-put! row "type" .?type)
                   (hash-put! row "ancestors" (process-ancestors .?ancestors))
                   (when (and .?_links
-                             (table? ._links))
+                             (hash-table? ._links))
                     (let-hash ._links
                       (hash-put! row "tinyurl" (if .?tinyui
                                                  (format "~a/wiki~a" ....?url .tinyui)
@@ -218,14 +218,14 @@
   "List all Sub pages of given id"
   (let ((docinfo (get-more id))
         (outs [[ "id" "title" "status" "_links" "macroRenderedOutput" "extensions" "_expandable" ]]))
-    (if (table? docinfo)
+    (if (hash-table? docinfo)
       (let-hash docinfo
         (let-hash .?children
           (let-hash .?page
             (when (and .?results
                        (list? .results))
               (for (result .results)
-                (when (table? result)
+                (when (hash-table? result)
                   (let-hash result
                     (set! outs (cons [ .?id .?title .?status (hash->list .?macroRenderedOutput) (hash->list .?extensions) (hash->list .?_expandable) ] outs))))))))))
     (style-output outs)))
@@ -233,7 +233,7 @@
 (def (show-parents id)
   "Interactive version"
   (let ((docinfo (get-more id)))
-    (when (table? docinfo)
+    (when (hash-table? docinfo)
       (let-hash docinfo
         (when .?ancestors
           (pi (process-ancestors .ancestors)))))))
@@ -241,13 +241,13 @@
 (def (info id)
   "Interactive version"
   (let ((docinfo (get-more id)))
-    (when (table? docinfo)
+    (when (hash-table? docinfo)
       (let-hash docinfo
         (when .?children
-          (when (table? .children)
+          (when (hash-table? .children)
             (let-hash .children
               (when .?page
-                (when (table? .page)
+                (when (hash-table? .page)
                   (let-hash .page
                     (when (and .?results
                                (list? .results))
@@ -279,7 +279,7 @@
         (config-data (yaml-load config-file)))
     (unless (and (list? config-data)
                  (length>n? config-data 0)
-                 (table? (car config-data)))
+                 (hash-table? (car config-data)))
       (displayln (format "Could not parse your config ~a" config-file))
       (exit 2))
     (hash-for-each
@@ -300,9 +300,9 @@
       (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
         (unless status
           (raise body))
-        (when (table? body)
+        (when (hash-table? body)
           (let-hash body
-            (when (table? .?body)
+            (when (hash-table? .?body)
               (let-hash .body
                 (let-hash .view
                   (present-item .?value))))))))))
