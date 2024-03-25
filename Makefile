@@ -1,11 +1,12 @@
 PROJECT := confluence
 
 ARCH := $(shell uname -m)
-DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)"
+DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 
 default: static
 
 deps:
+	git config --global --add safe.directory /src
 	/opt/gerbil/bin/gxpkg install github.com/ober/oberlib
 
 build: deps
@@ -15,6 +16,8 @@ build: deps
 static: clean
 	docker run -t \
 	-e GERBIL_PATH=/src/.gerbil \
+	-e UID=$(id -u) \
+	-e GID=$(id -g) \
 	-e USER=$(USER) \
 	-v $(PWD):/src:z \
 	$(DOCKER_IMAGE) \
