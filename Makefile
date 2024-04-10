@@ -2,6 +2,7 @@ PROJECT := confluence
 
 ARCH := $(shell uname -m)
 DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
+PWD := $(shell pwd)
 
 default: static
 
@@ -11,7 +12,7 @@ deps:
 
 build: deps
 	/opt/gerbil/bin/gxpkg link $(PROJECT) /src || true
-	/opt/gerbil/bin/gxpkg build --optimized $(PROJECT)
+	/opt/gerbil/bin/gxpkg build -R $(PROJECT)
 
 static: clean
 	docker run -t \
