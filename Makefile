@@ -1,6 +1,7 @@
 PROJECT := confluence
 ARCH := $(shell uname -m)
 PWD := $(shell pwd)
+GERBIL_HOME := "/opt/gerbil"
 DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 UID := $(shell id -u)
 GID := $(shell id -g)
