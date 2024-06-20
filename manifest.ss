@@ -1,6 +1,6 @@
 (def version-manifest
-     '(("" . "7a32d28")
-       ("Gerbil" . "0.17.0-294-g1c5d488f")
-       ("Gambit" . "v4.9.5-40-g24201248")
+     '(("" . "8a18bff")
+       ("Gerbil" . "v0.18.1-123-g7aa20c35")
+       ("Gambit" . "v4.9.5-130-g09335d95")
        ("github.com/mighty-gerbils/gerbil-libyaml" . "398a197")
-       ("github.com/ober/oberlib" . "a78b345")))
+       ("github.com/ober/oberlib" . "6dd2676")))
