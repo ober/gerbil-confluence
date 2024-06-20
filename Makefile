@@ -3,8 +3,6 @@ PROJECT := confluence
 ARCH := $(shell uname -m)
 DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 PWD := $(shell pwd)
-UID := $(shell id -u)
-GID := $(shell id -g)
 
 default: static
 
