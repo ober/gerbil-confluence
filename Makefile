@@ -3,6 +3,8 @@ PROJECT := confluence
 ARCH := $(shell uname -m)
 DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 PWD := $(shell pwd)
+UID := $(shell id -u)
+GID := $(shell id -g)
 
 default: static
 
@@ -17,8 +19,8 @@ build: deps
 static: clean
 	docker run -t \
 	-e GERBIL_PATH=/src/.gerbil \
-	-e UID=$(id -u) \
-	-e GID=$(id -g) \
+	-e UID=$(UID) \
+	-e GID=$(GID) \
 	-e USER=$(USER) \
 	-v $(PWD):/src:z \
 	$(DOCKER_IMAGE) \
