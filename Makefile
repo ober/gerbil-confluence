@@ -1,12 +1,11 @@
 PROJECT := confluence
-
 ARCH := $(shell uname -m)
-DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 PWD := $(shell pwd)
+DOCKER_IMAGE := "gerbil/gerbilxx:$(ARCH)-master"
 UID := $(shell id -u)
 GID := $(shell id -g)
 
-default: static
+default: linux-static-docker
 
 check-root:
 	@if [ "${UID}" -eq 0 ]; then \
@@ -14,16 +13,15 @@ check-root:
 	fi
 
 deps:
-	git config --global --add safe.directory /src
-	/opt/gerbil/bin/gxpkg install github.com/ober/oberlib
+	$(GERBIL_HOME)/bin/gxpkg install github.com/mighty-gerbils/gerbil-libyaml
+	$(GERBIL_HOME)/bin/gxpkg install github.com/ober/oberlib
 
 build: deps check-root
-	/opt/gerbil/bin/gxpkg link $(PROJECT) /src || true
-	/opt/gerbil/bin/gxpkg build -R $(PROJECT)
+	$(GERBIL_HOME)/bin/gxpkg link $(PROJECT) /src || true
+	$(GERBIL_HOME)/bin/gxpkg build -R $(PROJECT)
 
-static: clean
+linux-static-docker: clean
 	docker run -t \
-	-e GERBIL_PATH=/src/.gerbil \
 	-u "$(UID):$(GID)" \
 	-v $(PWD):/src:z \
 	$(DOCKER_IMAGE) \
