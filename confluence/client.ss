@@ -21,7 +21,7 @@
 
 (export #t)
 (declare (not optimize-dead-definitions))
-(def version "0.14")
+(def version "1.0.0")
 
 (def config-file "~/.confluence.yaml")
 
@@ -523,6 +523,92 @@
         body))))
 
 ;;; ============================================================================
+;;; SPACE PROPERTIES API ENDPOINTS
+;;; ============================================================================
+
+(def (get-space-properties space-key #!key (limit 10) (start 0) (expand []))
+  "Get properties for a space"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/space/~a/property?limit=~a&start=~a~a"
+                       .url space-key limit start expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-space-property space-key key)
+  "Get a specific property for a space"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/space/~a/property/~a" .url space-key key)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (create-space-property space-key key value)
+  "Create a property for a space"
+  (let-hash (load-config)
+    (let* ((url (format "~a/wiki/rest/api/space/~a/property" .url space-key))
+           (data (hash ("key" key) ("value" value))))
+      (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        body))))
+
+(def (update-space-property space-key key value)
+  "Update a property for a space"
+  (let-hash (load-config)
+    (let* ((prop-info (get-space-property space-key key))
+           (version (if (hash-table? prop-info)
+                       (let-hash prop-info
+                         (if (hash-table? .?version)
+                           (let-hash .version
+                             .?number)
+                           0))
+                       0))
+           (url (format "~a/wiki/rest/api/space/~a/property/~a" .url space-key key))
+           (data (hash 
+                  ("key" key) 
+                  ("value" value)
+                  ("version" (hash ("number" (1+ version)))))))
+      (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        body))))
+
+(def (delete-space-property space-key key)
+  "Delete a property from a space"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/space/~a/property/~a" .url space-key key)))
+      (with ([status body] (rest-call 'delete url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; SPACE SETTINGS API ENDPOINTS
+;;; ============================================================================
+
+(def (get-space-settings space-key)
+  "Get settings for a space"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/space/~a/settings" .url space-key)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (update-space-settings space-key settings)
+  "Update settings for a space. settings should be a hash table with routing-override-enabled key"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/space/~a/settings" .url space-key)))
+      (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string settings)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
 ;;; CONTENT CHILDREN AND DESCENDANTS API ENDPOINTS
 ;;; ============================================================================
 
@@ -925,6 +1011,60 @@
   "Get a specific content template"
   (let-hash (load-config)
     (let ((url (format "~a/wiki/rest/api/template/~a" .url template-id)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; GENERAL SEARCH API ENDPOINTS
+;;; ============================================================================
+
+(def (search-by-cql cql #!key (cql-context #f) (limit 25) (start 0) (expand []))
+  "Search using CQL (Confluence Query Language)"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (context-str (if cql-context (format "&cqlcontext=~a" cql-context) ""))
+           (url (format "~a/wiki/rest/api/content/search?cql=~a&limit=~a&start=~a~a~a" 
+                       .url (make-web-safe cql) limit start expand-str context-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (general-search query #!key (limit 20))
+  "General search across content, users, and spaces"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/search?cql=~a&limit=~a" 
+                      .url (make-web-safe query) limit)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; CONTENT LISTING API ENDPOINTS  
+;;; ============================================================================
+
+(def (list-content #!key (type "page") (space-key #f) (title #f) (status "current") 
+                   (posting-day #f) (limit 25) (start 0) (expand []) (order-by #f))
+  "List content with various filters"
+  (let-hash (load-config)
+    (let* ((query-params
+            (filter (lambda (x) x)
+                   (list
+                    (format "type=~a" type)
+                    (if space-key (format "spaceKey=~a" space-key) #f)
+                    (if title (format "title=~a" title) #f)
+                    (if status (format "status=~a" status) #f)
+                    (if posting-day (format "postingDay=~a" posting-day) #f)
+                    (if order-by (format "orderby=~a" order-by) #f)
+                    (format "limit=~a" limit)
+                    (format "start=~a" start))))
+           (expand-param (if (null? expand) "" (format "expand=~a" (string-join expand ","))))
+           (all-params (filter (lambda (x) x) (cons expand-param query-params)))
+           (query-str (format "?~a" (string-join all-params "&")))
+           (url (format "~a/wiki/rest/api/content~a" .url query-str)))
       (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
         (unless status
           (error body))

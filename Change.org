@@ -1,2 +1,21 @@
+** 1.0.0
+   Complete Confluence REST API v1 integration
+   - Added 50+ new API endpoint functions
+   - Space management (create, update, delete, properties, settings)
+   - Content hierarchy (children, descendants)
+   - Labels (get, add, remove)
+   - Attachments (list, get)
+   - Comments (list, create)
+   - Content properties (CRUD)
+   - Space properties (CRUD)
+   - Users and groups (get, list, memberships)
+   - Restrictions and permissions
+   - Version history
+   - Audit logs
+   - System information
+   - Templates (content and blueprint)
+   - General and CQL search
+   - Added 25+ new CLI commands
+   - Created comprehensive README with examples
 ** 0.07
    Implement markdown to confluence for headers, and blockquotes
