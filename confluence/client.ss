@@ -438,3 +438,494 @@
    ["Content-type" :: "application/json"]
    ["Authorization" :: basic ]
    ])
+
+;;; ============================================================================
+;;; SPACE API ENDPOINTS
+;;; ============================================================================
+
+(def (list-spaces #!key (limit 25) (start 0) (expand []))
+  "List all spaces in the Confluence instance"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/space?limit=~a&start=~a~a" .url limit start expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-space space-key #!key (expand []))
+  "Get information about a specific space"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "?expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/space/~a~a" .url space-key expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (create-space key name description #!key (private #f))
+  "Create a new space"
+  (let-hash (load-config)
+    (let* ((url (format "~a/wiki/rest/api/space" .url))
+           (data (hash
+                  ("key" key)
+                  ("name" name)
+                  ("description" (hash ("plain" (hash ("value" description) ("representation" "plain")))))
+                  )))
+      (when private
+        (hash-put! data "_private" #t))
+      (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        body))))
+
+(def (update-space space-key name description #!key (homepage-id #f))
+  "Update an existing space"
+  (let-hash (load-config)
+    (let* ((url (format "~a/wiki/rest/api/space/~a" .url space-key))
+           (space-info (get-space space-key))
+           (version (if (hash-table? space-info)
+                       (let-hash space-info
+                         (if (hash-table? .?version)
+                           (let-hash .version
+                             .?number)
+                           1))
+                       1))
+           (data (hash
+                  ("name" name)
+                  ("description" (hash ("plain" (hash ("value" description) ("representation" "plain")))))
+                  ("version" (hash ("number" (1+ version)))))))
+      (when homepage-id
+        (hash-put! data "homepage" (hash ("id" homepage-id))))
+      (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        body))))
+
+(def (delete-space space-key)
+  "Delete a space"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/space/~a" .url space-key)))
+      (with ([status body] (rest-call 'delete url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-space-content space-key #!key (type "page") (limit 25) (start 0) (expand []))
+  "Get content in a space"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/space/~a/content/~a?limit=~a&start=~a~a" 
+                       .url space-key type limit start expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; CONTENT CHILDREN AND DESCENDANTS API ENDPOINTS
+;;; ============================================================================
+
+(def (get-content-children id #!key (type "page") (limit 25) (start 0) (expand []))
+  "Get children of a piece of content"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/child/~a?limit=~a&start=~a~a"
+                       .url id type limit start expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-content-descendants id #!key (type "page") (limit 25) (start 0) (expand []))
+  "Get descendants of a piece of content"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/descendant/~a?limit=~a&start=~a~a"
+                       .url id type limit start expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; LABELS API ENDPOINTS
+;;; ============================================================================
+
+(def (get-labels id #!key (limit 200) (start 0))
+  "Get labels for a piece of content"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/content/~a/label?limit=~a&start=~a" .url id limit start)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (add-labels id labels)
+  "Add labels to content. labels should be a list of label names"
+  (let-hash (load-config)
+    (let* ((url (format "~a/wiki/rest/api/content/~a/label" .url id))
+           (label-objects (map (lambda (label) (hash ("name" label) ("prefix" "global"))) labels))
+           (data label-objects))
+      (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        body))))
+
+(def (remove-label id label)
+  "Remove a label from content"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/content/~a/label/~a" .url id label)))
+      (with ([status body] (rest-call 'delete url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; ATTACHMENTS API ENDPOINTS
+;;; ============================================================================
+
+(def (get-attachments id #!key (limit 50) (start 0) (expand []))
+  "Get attachments for a piece of content"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/child/attachment?limit=~a&start=~a~a"
+                       .url id limit start expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-attachment id attachment-id #!key (expand []))
+  "Get a specific attachment"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "?expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/child/attachment/~a~a" 
+                       .url id attachment-id expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; COMMENTS API ENDPOINTS
+;;; ============================================================================
+
+(def (get-comments id #!key (limit 25) (start 0) (expand []))
+  "Get comments for a piece of content"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/child/comment?limit=~a&start=~a~a"
+                       .url id limit start expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (create-comment parent-id comment-text)
+  "Create a comment on a piece of content"
+  (let-hash (load-config)
+    (let* ((url (format "~a/wiki/rest/api/content" .url))
+           (data (hash
+                  ("type" "comment")
+                  ("container" (hash ("id" parent-id) ("type" "page")))
+                  ("body" (hash
+                           ("storage" (hash
+                                      ("value" comment-text)
+                                      ("representation" "storage"))))))))
+      (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; CONTENT PROPERTIES API ENDPOINTS
+;;; ============================================================================
+
+(def (get-content-properties id #!key (limit 10) (start 0) (expand []))
+  "Get properties for a piece of content"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/property?limit=~a&start=~a~a"
+                       .url id limit start expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-content-property id key)
+  "Get a specific property for a piece of content"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/content/~a/property/~a" .url id key)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (create-content-property id key value)
+  "Create a property for a piece of content"
+  (let-hash (load-config)
+    (let* ((url (format "~a/wiki/rest/api/content/~a/property" .url id))
+           (data (hash ("key" key) ("value" value))))
+      (with ([status body] (rest-call 'post url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        body))))
+
+(def (update-content-property id key value)
+  "Update a property for a piece of content"
+  (let-hash (load-config)
+    (let* ((prop-info (get-content-property id key))
+           (version (if (hash-table? prop-info)
+                       (let-hash prop-info
+                         (if (hash-table? .?version)
+                           (let-hash .version
+                             .?number)
+                           0))
+                       0))
+           (url (format "~a/wiki/rest/api/content/~a/property/~a" .url id key))
+           (data (hash 
+                  ("key" key) 
+                  ("value" value)
+                  ("version" (hash ("number" (1+ version)))))))
+      (with ([status body] (rest-call 'put url (default-headers .basic-auth) (json-object->string data)))
+        (unless status
+          (error body))
+        body))))
+
+(def (delete-content-property id key)
+  "Delete a property from content"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/content/~a/property/~a" .url id key)))
+      (with ([status body] (rest-call 'delete url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; USER API ENDPOINTS
+;;; ============================================================================
+
+(def (get-current-user #!key (expand []))
+  "Get the current user"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "?expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/user/current~a" .url expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-user #!key (username #f) (key #f) (account-id #f) (expand []))
+  "Get a user by username, key, or account ID"
+  (let-hash (load-config)
+    (let* ((query-params
+            (filter (lambda (x) x)
+                   (list
+                    (if username (format "username=~a" username) #f)
+                    (if key (format "key=~a" key) #f)
+                    (if account-id (format "accountId=~a" account-id) #f))))
+           (expand-param (if (null? expand) "" (format "expand=~a" (string-join expand ","))))
+           (all-params (filter (lambda (x) x) (cons expand-param query-params)))
+           (query-str (if (null? all-params) "" (format "?~a" (string-join all-params "&"))))
+           (url (format "~a/wiki/rest/api/user~a" .url query-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-user-groups #!key (username #f) (key #f) (account-id #f) (limit 200) (start 0))
+  "Get groups for a user"
+  (let-hash (load-config)
+    (let* ((query-params
+            (filter (lambda (x) x)
+                   (list
+                    (if username (format "username=~a" username) #f)
+                    (if key (format "key=~a" key) #f)
+                    (if account-id (format "accountId=~a" account-id) #f)
+                    (format "limit=~a" limit)
+                    (format "start=~a" start))))
+           (query-str (format "?~a" (string-join query-params "&")))
+           (url (format "~a/wiki/rest/api/user/memberof~a" .url query-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; GROUP API ENDPOINTS
+;;; ============================================================================
+
+(def (list-groups #!key (limit 200) (start 0))
+  "List all groups"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/group?limit=~a&start=~a" .url limit start)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-group group-name #!key (expand []))
+  "Get a specific group"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "?expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/group/~a~a" .url group-name expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-group-members group-name #!key (limit 200) (start 0) (expand []))
+  "Get members of a group"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "&expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/group/~a/member?limit=~a&start=~a~a"
+                       .url group-name limit start expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; CONTENT RESTRICTIONS API ENDPOINTS
+;;; ============================================================================
+
+(def (get-content-restrictions id #!key (expand []))
+  "Get restrictions for a piece of content"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "?expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/restriction~a" .url id expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-restrictions-by-operation id operation #!key (expand []))
+  "Get restrictions for a specific operation (read or update)"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "?expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/restriction/byOperation/~a~a"
+                       .url id operation expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; CONTENT VERSION/HISTORY API ENDPOINTS
+;;; ============================================================================
+
+(def (get-content-history id #!key (expand []))
+  "Get the history of a piece of content"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "?expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/history~a" .url id expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-content-version id version-number #!key (expand []))
+  "Get a specific version of content"
+  (let-hash (load-config)
+    (let* ((expand-str (if (null? expand) "" (format "?expand=~a" (string-join expand ","))))
+           (url (format "~a/wiki/rest/api/content/~a/version/~a~a" 
+                       .url id version-number expand-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (list-content-versions id #!key (limit 200) (start 0))
+  "List all versions of a piece of content"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/content/~a/version?limit=~a&start=~a" 
+                      .url id limit start)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; AUDIT API ENDPOINTS
+;;; ============================================================================
+
+(def (get-audit-records #!key (start-date #f) (end-date #f) (search-string #f) (limit 1000) (start 0))
+  "Get audit records"
+  (let-hash (load-config)
+    (let* ((query-params
+            (filter (lambda (x) x)
+                   (list
+                    (if start-date (format "startDate=~a" start-date) #f)
+                    (if end-date (format "endDate=~a" end-date) #f)
+                    (if search-string (format "searchString=~a" search-string) #f)
+                    (format "limit=~a" limit)
+                    (format "start=~a" start))))
+           (query-str (format "?~a" (string-join (filter (lambda (x) x) query-params) "&")))
+           (url (format "~a/wiki/rest/api/audit~a" .url query-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; SETTINGS API ENDPOINTS
+;;; ============================================================================
+
+(def (get-system-info)
+  "Get system information"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/settings/systemInfo" .url)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+;;; ============================================================================
+;;; TEMPLATE API ENDPOINTS
+;;; ============================================================================
+
+(def (get-content-templates #!key (space-key #f) (limit 25) (start 0) (expand []))
+  "Get content templates"
+  (let-hash (load-config)
+    (let* ((query-params
+            (filter (lambda (x) x)
+                   (list
+                    (if space-key (format "spaceKey=~a" space-key) #f)
+                    (format "limit=~a" limit)
+                    (format "start=~a" start))))
+           (expand-param (if (null? expand) "" (format "expand=~a" (string-join expand ","))))
+           (all-params (filter (lambda (x) x) (cons expand-param query-params)))
+           (query-str (format "?~a" (string-join all-params "&")))
+           (url (format "~a/wiki/rest/api/template/page~a" .url query-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-blueprint-templates #!key (space-key #f) (limit 25) (start 0) (expand []))
+  "Get blueprint templates"
+  (let-hash (load-config)
+    (let* ((query-params
+            (filter (lambda (x) x)
+                   (list
+                    (if space-key (format "spaceKey=~a" space-key) #f)
+                    (format "limit=~a" limit)
+                    (format "start=~a" start))))
+           (expand-param (if (null? expand) "" (format "expand=~a" (string-join expand ","))))
+           (all-params (filter (lambda (x) x) (cons expand-param query-params)))
+           (query-str (format "?~a" (string-join all-params "&")))
+           (url (format "~a/wiki/rest/api/template/blueprint~a" .url query-str)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
+
+(def (get-template template-id)
+  "Get a specific content template"
+  (let-hash (load-config)
+    (let ((url (format "~a/wiki/rest/api/template/~a" .url template-id)))
+      (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
+        (unless status
+          (error body))
+        body))))
