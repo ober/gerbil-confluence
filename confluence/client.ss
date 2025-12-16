@@ -831,7 +831,8 @@
                     (if account-id (format "accountId=~a" account-id) #f)
                     (format "limit=~a" limit)
                     (format "start=~a" start))))
-           (query-str (format "?~a" (string-join query-params "&")))
+           (filtered-params (filter (lambda (x) x) query-params))
+           (query-str (if (null? filtered-params) "" (format "?~a" (string-join filtered-params "&"))))
            (url (format "~a/wiki/rest/api/user/memberof~a" .url query-str)))
       (with ([status body] (rest-call 'get url (default-headers .basic-auth)))
         (unless status
