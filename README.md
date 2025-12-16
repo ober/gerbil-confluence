@@ -264,7 +264,7 @@ confluence md2c my-document.md
 ### Content API
 
 - `create` - Create new content
-- `update` - Update existing content
+- `update` / `update-batch` - Update existing content
 - `get` - Get content by ID
 - `body` - Get content body
 - `search` - Search content using CQL
@@ -279,7 +279,10 @@ confluence md2c my-document.md
 - `list-spaces` - List all spaces
 - `get-space` - Get space information
 - `create-space` - Create a new space
+- `update-space` - Update a space
 - `delete-space` - Delete a space
+- Space properties: `get-space-properties`, `get-space-property`, `create-space-property`, `update-space-property`, `delete-space-property`
+- Space settings: `get-space-settings`, `update-space-settings`
 
 ### Label API
 
@@ -290,25 +293,57 @@ confluence md2c my-document.md
 ### Attachment API
 
 - `get-attachments` - List attachments for content
+- `get-attachment` - Get specific attachment
 
 ### Comment API
 
 - `get-comments` - Get comments for content
 - `create-comment` - Create a comment
 
+### Content Properties API
+
+- `get-content-properties` - List content properties
+- `get-content-property` - Get specific property
+- `create-content-property` - Create property
+- `update-content-property` - Update property
+- `delete-content-property` - Delete property
+
+### Restrictions API
+
+- `get-content-restrictions` - Get all restrictions
+- `get-restrictions-by-operation` - Get restrictions for specific operation
+
 ### User API
 
 - `get-current-user` - Get current user information
-- `get-user` - Get user by username
+- `get-user` - Get user by username/key/account ID
+- `get-user-groups` - Get groups for a user
 
 ### Group API
 
 - `list-groups` - List all groups
 - `get-group` - Get group information
+- `get-group-members` - Get group members
+
+### Search API
+
+- `search` - Text or CQL search
+- `search-by-cql` - Advanced CQL search
+- `general-search` - General search across all types
+
+### Template API
+
+- `get-content-templates` - Get content templates
+- `get-blueprint-templates` - Get blueprint templates
+- `get-template` - Get specific template
 
 ### System API
 
 - `system-info` - Get system information
+
+### Audit API
+
+- `get-audit-records` - Get audit log records
 
 ## Programmatic API
 
@@ -345,6 +380,13 @@ All CLI commands are available as Gerbil functions. Import the client module:
 - `(update-space space-key name description #!key (homepage-id #f))`
 - `(delete-space space-key)`
 - `(get-space-content space-key #!key (type "page") (limit 25) (start 0) (expand []))`
+- `(get-space-properties space-key #!key (limit 10) (start 0) (expand []))`
+- `(get-space-property space-key key)`
+- `(create-space-property space-key key value)`
+- `(update-space-property space-key key value)`
+- `(delete-space-property space-key key)`
+- `(get-space-settings space-key)`
+- `(update-space-settings space-key settings)`
 
 #### Content Functions
 - `(get id)`
@@ -409,6 +451,14 @@ All CLI commands are available as Gerbil functions. Import the client module:
 - `(get-content-templates #!key (space-key #f) (limit 25) (start 0) (expand []))`
 - `(get-blueprint-templates #!key (space-key #f) (limit 25) (start 0) (expand []))`
 - `(get-template template-id)`
+
+#### Search Functions
+- `(search query)` - Simple text search or CQL search
+- `(search-by-cql cql #!key (cql-context #f) (limit 25) (start 0) (expand []))`
+- `(general-search query #!key (limit 20))`
+
+#### Content Listing Functions
+- `(list-content #!key (type "page") (space-key #f) (title #f) (status "current") (posting-day #f) (limit 25) (start 0) (expand []) (order-by #f))`
 
 #### Format Conversion Functions
 - `(convert markdown-file)`
