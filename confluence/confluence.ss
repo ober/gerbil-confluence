@@ -85,6 +85,92 @@
 	     (argument 'id help: "id of document")
 	     (argument 'file help: "file of content")))
 
+  ;; Space commands
+  (def list-spaces
+    (command 'list-spaces help: "List all spaces"))
+
+  (def get-space
+    (command 'get-space help: "Get space information"
+             (argument 'key help: "space key")))
+
+  (def create-space
+    (command 'create-space help: "Create a new space"
+             (argument 'key help: "space key")
+             (argument 'name help: "space name")
+             (argument 'description help: "space description")))
+
+  (def delete-space
+    (command 'delete-space help: "Delete a space"
+             (argument 'key help: "space key")))
+
+  ;; Label commands
+  (def get-labels
+    (command 'get-labels help: "Get labels for content"
+             (argument 'id help: "content id")))
+
+  (def add-labels
+    (command 'add-labels help: "Add labels to content"
+             (argument 'id help: "content id")
+             (argument 'labels help: "comma-separated labels")))
+
+  (def remove-label
+    (command 'remove-label help: "Remove a label from content"
+             (argument 'id help: "content id")
+             (argument 'label help: "label name")))
+
+  ;; Attachment commands
+  (def get-attachments
+    (command 'get-attachments help: "Get attachments for content"
+             (argument 'id help: "content id")))
+
+  ;; Comment commands
+  (def get-comments
+    (command 'get-comments help: "Get comments for content"
+             (argument 'id help: "content id")))
+
+  (def create-comment
+    (command 'create-comment help: "Create a comment"
+             (argument 'id help: "parent content id")
+             (argument 'text help: "comment text")))
+
+  ;; User commands
+  (def get-current-user
+    (command 'get-current-user help: "Get current user information"))
+
+  (def get-user
+    (command 'get-user help: "Get user information"
+             (argument 'username help: "username")))
+
+  ;; Group commands
+  (def list-groups
+    (command 'list-groups help: "List all groups"))
+
+  (def get-group
+    (command 'get-group help: "Get group information"
+             (argument 'name help: "group name")))
+
+  ;; Content children/descendants
+  (def get-children
+    (command 'get-children help: "Get children of content"
+             (argument 'id help: "content id")))
+
+  (def get-descendants
+    (command 'get-descendants help: "Get descendants of content"
+             (argument 'id help: "content id")))
+
+  ;; Version/History commands
+  (def get-history
+    (command 'get-history help: "Get content history"
+             (argument 'id help: "content id")))
+
+  (def list-versions
+    (command 'list-versions help: "List content versions"
+             (argument 'id help: "content id")))
+
+  ;; System commands
+  (def system-info
+    (command 'system-info help: "Get system information"))
+
   (call-with-getopt process-args args
 		    program: "confluence"
 		    help: "Confluence cli in Gerbil"
@@ -101,6 +187,34 @@
 		    search
 		    update-batch
 		    update
+		    ;; Space commands
+		    list-spaces
+		    get-space
+		    create-space
+		    delete-space
+		    ;; Label commands
+		    get-labels
+		    add-labels
+		    remove-label
+		    ;; Attachment commands
+		    get-attachments
+		    ;; Comment commands
+		    get-comments
+		    create-comment
+		    ;; User commands
+		    get-current-user
+		    get-user
+		    ;; Group commands
+		    list-groups
+		    get-group
+		    ;; Content hierarchy
+		    get-children
+		    get-descendants
+		    ;; History/versions
+		    get-history
+		    list-versions
+		    ;; System
+		    system-info
 		    ))
 
 (def (process-args cmd opt)
@@ -131,4 +245,52 @@
       ((update-batch)
        (update-batch .version .id .title .file))
       ((update)
-       (update .id .file)))))
+       (update .id .file))
+      ;; Space commands
+      ((list-spaces)
+       (present-item (list-spaces)))
+      ((get-space)
+       (present-item (get-space .key)))
+      ((create-space)
+       (present-item (create-space .key .name .description)))
+      ((delete-space)
+       (present-item (delete-space .key)))
+      ;; Label commands
+      ((get-labels)
+       (present-item (get-labels .id)))
+      ((add-labels)
+       (let ((label-list (string-split .labels #\,)))
+         (present-item (add-labels .id label-list))))
+      ((remove-label)
+       (present-item (remove-label .id .label)))
+      ;; Attachment commands
+      ((get-attachments)
+       (present-item (get-attachments .id)))
+      ;; Comment commands
+      ((get-comments)
+       (present-item (get-comments .id)))
+      ((create-comment)
+       (present-item (create-comment .id .text)))
+      ;; User commands
+      ((get-current-user)
+       (present-item (get-current-user)))
+      ((get-user)
+       (present-item (get-user username: .username)))
+      ;; Group commands
+      ((list-groups)
+       (present-item (list-groups)))
+      ((get-group)
+       (present-item (get-group .name)))
+      ;; Content hierarchy
+      ((get-children)
+       (present-item (get-content-children .id)))
+      ((get-descendants)
+       (present-item (get-content-descendants .id)))
+      ;; History/versions
+      ((get-history)
+       (present-item (get-content-history .id)))
+      ((list-versions)
+       (present-item (list-content-versions .id)))
+      ;; System
+      ((system-info)
+       (present-item (get-system-info))))))
